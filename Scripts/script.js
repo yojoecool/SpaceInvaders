@@ -5,6 +5,7 @@ var context = canvas.getContext("2d");
 console.log(context);
 
 var activeKey = 0;
+var gameOver = false;
 
 var colorArray = [
   "#092140",
@@ -14,12 +15,10 @@ var colorArray = [
   "#BF2A2A"
 ];
 
-function Player(x, dx, dy, height, width) {
+function Player(x, dx, height, width) {
   this.x = x;
   this.y = canvas.height - height;
   this.dx = dx;
-  // this.dy = dy;
-  // this.radius = width;
   this.width = width;
   this.height = height;
   this.color = colorArray[Math.floor(Math.random() * colorArray.length)];
@@ -35,34 +34,71 @@ function Player(x, dx, dy, height, width) {
 
   this.draw = function() {
     context.beginPath();
-    // context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
     context.fillRect(this.x, this.y, this.height, this.width);
     context.fillStyle = this.color;
     context.fill();
   }
 
   this.update = function(keycode) {
-    if (this.animate) {
-      console.log("update position of player");
-      if (keycode === 39 && this.x + this.width + this.dx <= canvas.width)
-        this.x += this.dx;
-      else if (keycode === 37 && this.x - this.dx >= 0)
-        this.x -= this.dx;
+    if (!gameOver) {
+      if (this.animate) {
+        console.log("update position of player");
+        if (keycode === 39 && this.x + this.width + this.dx <= canvas.width)
+          this.x += this.dx;
+        else if (keycode === 37 && this.x - this.dx >= 0)
+          this.x -= this.dx;
+      }
+      this.draw();
     }
-    this.draw();
+  }
+}
+
+function Enemy(x, y, dx, dy, height, width) {
+  this.x = x;
+  this.y = y;
+  this.dx = dx;
+  this.dy = dy;
+  this.width = width;
+  this.height = height;
+  this.color = colorArray[Math.floor(Math.random() * colorArray.length)];
+  this.frame = 0;
+
+  this.draw = function() {
+    context.beginPath();
+    context.fillRect(this.x, this.y, this.height, this.width);
+    context.fillStyle = this.color;
+    context.fill();
+  }
+
+  this.update = function() {
+    if (!gameOver) {
+      this.x += this.dx;
+
+      if (this.x + this.width >= canvas.width || this.x <= 0) {
+        this.dx = -this.dx;
+        this.y += this.dy;
+      }
+
+      if (this.y > canvas.height - (this.height * 2)) gameOver = true;
+
+      this.draw();
+    }
   }
 }
 
 
-var player = new Player(100, 10, 10, 50, 50);
-console.log(player);
+var player = new Player(0, 10, 50, 50);
+var enemy = new Enemy(0, 0, 7, 25, 50, 50);
+
 var animate = function() {
   requestAnimationFrame(animate);
   context.clearRect(0, 0, 600, 600);
   player.update(activeKey);
+  enemy.update();
 }
 
 player.draw();
+enemy.draw();
 animate();
 
 var keydown = false;
@@ -71,7 +107,6 @@ document.addEventListener("keydown", (event) => {
   keydown = true;
   activeKey = event.keyCode;
   player.animateOn();
-  console.log(event);
 });
 document.addEventListener("keyup", (event) => {
   activeKey = -1;
