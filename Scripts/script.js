@@ -57,6 +57,7 @@ let activeKey = 0;
 let gameOver = false;
 let moveDownNextTick = false;
 let gameStart = false;
+let score = 0;
 
 let drawBackground = function() {
   context.beginPath();
@@ -290,7 +291,6 @@ class Enemy extends Character {
     this.shotFrame = 0;
     this.hit = false;
     this.shotFreq = shotFreq;
-    this.enemyType = enemyType;
     this.animationFrame = 0;
     this.animationFreq = enemySprites[enemyType].animate;
     this.firstAniFrame = true;
@@ -299,6 +299,10 @@ class Enemy extends Character {
 
   setHit(hit) {
     this.hit = hit;
+  }
+
+  getEnemyType() {
+    return this.enemyType;
   }
 
   clear() {
@@ -377,6 +381,7 @@ levels.push(level1);
 
 let init = function() {
   levels[0]();
+  score = 0;
   player = new Player((canvas.width / 2) - 25, 10, 65, 45, spriteSheet, 150, 637, 73, 53);
 }
 
@@ -394,6 +399,8 @@ let laserHitCheck = function() {
           playerLasers[i].getY() >= enemies[j].getY() && playerLasers[i].getY() + playerLasers[i].getHeight() <= enemies[j].getY() + enemies[j].getHeight()) {
         playerLasers[i].setHit(true);
         playerLasers[i].setX(-500);
+
+        score += (enemies[j].getEnemyType() + 1) * 100;
         enemies[j].clear();
       }
     }
@@ -450,6 +457,12 @@ let drawLives = function() {
   }
 }
 
+let drawScore = function() {
+  context.font = "15px 'Press Start 2P', cursive";
+  context.fillStyle = "white";
+  context.fillText(`Score: ${score}`, 30, 30);
+}
+
 let gameLoop = function() {
   requestAnimationFrame(gameLoop);
   drawBackground();
@@ -459,6 +472,7 @@ let gameLoop = function() {
     enemies[i].update();
   }
   laserHitCheck();
+  drawScore();
   drawLives();
 }
 
