@@ -58,6 +58,7 @@ let gameOver = false;
 let moveDownNextTick = false;
 let gameStart = false;
 let score = 0;
+let numOfEnemies = 0;
 
 let drawBackground = function() {
   context.beginPath();
@@ -370,9 +371,10 @@ let level1 = function() {
       let enemyType = j % 3;
       let fireRate = Math.floor(Math.random() * 1000) + 250;
       let x = i * (2 * enemyWidth);
-      let y = j * (1.5 * enemyHeight) + 50;
+      let y = j * (1.5 * enemyHeight) + 55;
 
       enemies.push(new Enemy(x, y, 2, 25, enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
+      numOfEnemies++;
     }
   }
 }
@@ -401,6 +403,7 @@ let laserHitCheck = function() {
         playerLasers[i].setX(-500);
 
         score += (enemies[j].getEnemyType() + 1) * 100;
+        numOfEnemies--;
         enemies[j].clear();
       }
     }
