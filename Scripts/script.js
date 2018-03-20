@@ -189,7 +189,7 @@ class Character extends GamePiece {
     for (let i = 0; i < this.lasers.length; i++) {
       this.lasers[i].update();
 
-      if ((!this.enemy && this.lasers[i].getY() <= 45) ||
+      if ((!this.enemy && this.lasers[i].getY() <= 50) ||
           (this.enemy && this.lasers[i].getY() >= canvas.height)) {
 
         lasersToRemove++;
@@ -371,14 +371,12 @@ class Enemy extends Character {
 let player;
 let enemies = [];
 let levels = [];
+let enemyWidth = 38;
+let enemyHeight = 32;
 
-let level1 = function() {
-  level = 1;
+let createEnemies = function(speed) {
   numOfEnemies = 0;
   enemies = [];
-  let enemyWidth = 38;
-  let enemyHeight = 32;
-  let speed = 1;
   for (let i = 0; i < 5; i++) {
     for (let j = 0; j < 5; j++) {
       let enemyType = j % 3;
@@ -390,30 +388,29 @@ let level1 = function() {
       numOfEnemies++;
     }
   }
+}
+
+let level1 = function() {
+  level = 1;
+  let speed = 1;
+  createEnemies(speed);
 }
 
 let level2 = function() {
   level = 2;
-  numOfEnemies = 0;
-  enemies = [];
-  let enemyWidth = 38;
-  let enemyHeight = 32;
   let speed = 2;
-  for (let i = 0; i < 5; i++) {
-    for (let j = 0; j < 5; j++) {
-      let enemyType = j % 3;
-      let fireRate = Math.floor(Math.random() * 1000) + 250;
-      let x = i * (2 * enemyWidth);
-      let y = j * (1.5 * enemyHeight) + 55;
+  createEnemies(speed);
+}
 
-      enemies.push(new Enemy(x, y, speed, 25, enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
-      numOfEnemies++;
-    }
-  }
+let level3 = function() {
+  level = 3;
+  let speed = 3;
+  createEnemies(speed);
 }
 
 levels.push(level1);
 levels.push(level2);
+levels.push(level3);
 
 let init = function() {
   levels[0]();
@@ -486,10 +483,10 @@ let drawLives = function() {
 
   context.font = "15px 'Press Start 2P', cursive";
   context.fillStyle = "white";
-  context.fillText("Lives", canvas.width - 350, 30);
+  context.fillText("Lives", canvas.width - 350, 31);
 
   for (let i = 0; i < player.getLives(); i++) {
-    context.drawImage(life, 150, 637, 73, 53, canvas.width - 250 + (i * 50), 8, 30, 22);
+    context.drawImage(life, 150, 637, 73, 53, canvas.width - 250 + (i * 50), 8, 30, 25);
   }
 }
 
@@ -506,16 +503,35 @@ let drawNextLevel = function() {
   context.fillText(`Level ${levelDisplayed}`, canvas.width / 2 - 110, canvas.height / 2);
 }
 
+let youWin = function() {
+  context.font = "40px 'Press Start 2P', cursive";
+  context.fillStyle = "white";
+  context.fillText("You Win!!!", canvas.width / 2 - 190, canvas.height / 2);
+}
+
+let checkGameOver = function() {
+  if (gameOver) {
+    context.font = "40px 'Press Start 2P', cursive";
+    context.fillStyle = "white";
+    context.fillText("Game Over", canvas.width / 2 - 175, canvas.height / 2);
+  }
+}
+
 let nextLevelDelay = 0;
 let endOfLevelCheck = function() {
   if (numOfEnemies === 0) {
-    nextLevelDelay++;
-    if (nextLevelDelay === 250) {
-      level++;
-      nextLevelDelay = 0;
-      levels[level - 1]();
+    if (level + 1 < levels.length) {
+      nextLevelDelay++;
+      if (nextLevelDelay === 250) {
+        level++;
+        nextLevelDelay = 0;
+        levels[level - 1]();
+      }
+      else drawNextLevel();
     }
-    else drawNextLevel();
+    else {
+      youWin();
+    }
   }
 }
 
@@ -531,6 +547,7 @@ let gameLoop = function() {
   drawScore();
   drawLives();
   endOfLevelCheck();
+  checkGameOver();
 }
 
 
