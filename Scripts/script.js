@@ -75,6 +75,24 @@ class Character extends GamePiece {
     if (this.lasers.length < this.laserTotal)
       this.lasers.push(new Laser(this.x + this.width / 2, this.y, this.bulletSpeed, 10, 10, this.enemy));
   }
+
+  removeLasers() {
+    let removeLasers = [];
+    let lasersToRemove = 0;
+    for (let i = 0; i < this.lasers.length; i++) {
+      this.lasers[i].update();
+
+      if ((!this.enemy && this.lasers[i].getY() <= 0) ||
+          (this.enemy && this.lasers[i].getY() >= canvas.height)) {
+
+        lasersToRemove++;
+      }
+    }
+
+    for (let i = 0; i < lasersToRemove; i++) {
+      this.lasers.shift();
+    }
+  }
 }
 
 class Laser extends GamePiece {
@@ -143,19 +161,7 @@ class Player extends Character {
       }
       this.draw();
 
-      let removeLasers = [];
-      let lasersToRemove = 0;
-      for (let i = 0; i < this.lasers.length; i++) {
-        this.lasers[i].update();
-
-        if (this.lasers[i].getY() <= 0) {
-          lasersToRemove++;
-        }
-      }
-
-      for (let i = 0; i < lasersToRemove; i++) {
-        this.lasers.shift();
-      }
+      this.removeLasers();
     }
   }
 }
@@ -194,18 +200,7 @@ class Enemy extends Character {
         this.addLaser();
       }
 
-      let lasersToRemove = 0;
-      for (let i = 0; i < this.lasers.length; i++) {
-        this.lasers[i].update();
-
-        if (this.lasers[i].getY() >= canvas.height) {
-          lasersToRemove++;
-        }
-      }
-
-      for (let i = 0; i < lasersToRemove; i++) {
-        this.lasers.shift();
-      }
+      this.removeLasers();
 
       if (this.y > canvas.height - (this.height * 2)) gameOver = true;
 
@@ -240,7 +235,6 @@ let laserHitCheck = function() {
       enemyLasers[i].getY() >= player.getY() && enemyLasers[i].getY() + enemyLasers[i].getHeight() <= player.getY() + player.getHeight()) {
         enemyLasers[i].setHit(true);
         enemyLasers[i].setX(-500);
-        enemyLasers[i].setY(-500);
 
         player.loseLife();
     }
