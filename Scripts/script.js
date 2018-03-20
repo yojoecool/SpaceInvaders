@@ -1,13 +1,14 @@
 console.log("script loaded");
 
-var canvas = document.querySelector("canvas");
-var context = canvas.getContext("2d");
+let canvas = document.querySelector("canvas");
+let context = canvas.getContext("2d");
 
-var activeKey = 0;
-var gameOver = false;
-var gunShot = false;
+let activeKey = 0;
+let gameOver = false;
+let gunShot = false;
+let enemyInterval = 0;
 
-var colorArray = [
+let colorArray = [
   "#092140",
   "#024959",
   "#F2C777",
@@ -23,9 +24,30 @@ function Laser(x, y, dy, width, height, enemyLaser = true) {
   this.height = height;
   this.color = '#ff0000';
   this.enemyLaser = enemyLaser;
+  this.hit = false;
 
   this.getY = function() {
     return this.y;
+  }
+
+  this.getX = function() {
+    return this.x;
+  }
+
+  this.getWidth = function() {
+    return this.width;
+  }
+
+  this.getHeight = function() {
+    return this.height;
+  }
+
+  this.getHit = function() {
+    return this.hit;
+  }
+
+  this.setHit = function(hit) {
+    this.hit = hit;
   }
 
   this.draw = function() {
@@ -36,10 +58,14 @@ function Laser(x, y, dy, width, height, enemyLaser = true) {
   }
 
   this.update = function() {
-    if (this.y > 0) {
-      this.y -= this.dy;
-      this.draw();
-    }
+      if (!this.enemyLaser) {
+        if (this.y > 0)
+          this.y -= this.dy;
+      }
+      else this.y += this.dy;
+
+      if (!this.hit)
+        this.draw();
   }
 }
 
@@ -53,6 +79,26 @@ function Player(x, dx, width, height) {
   this.animate = false;
   this.laserTotal = 3;
   this.lasers = [];
+
+  this.getY = function() {
+    return this.y;
+  }
+
+  this.getX = function() {
+    return this.x;
+  }
+
+  this.getWidth = function() {
+    return this.width;
+  }
+
+  this.getHeight = function() {
+    return this.height;
+  }
+
+  this.getLasers = function() {
+    return this.lasers;
+  }
 
   this.animateOn = function() {
     this.animate = true;
@@ -84,32 +130,73 @@ function Player(x, dx, width, height) {
       }
       this.draw();
 
-      var removeLasers = [];
-      var lasersToRemove = 0;
-      for (var i = 0; i < this.lasers.length; i++) {
+      let removeLasers = [];
+      let lasersToRemove = 0;
+      for (let i = 0; i < this.lasers.length; i++) {
         this.lasers[i].update();
 
-        if (this.lasers[i].y <= 0) {
+        if (this.lasers[i].getY() <= 0) {
           lasersToRemove++;
         }
       }
 
-      for (var i = 0; i < lasersToRemove; i++) {
+      for (let i = 0; i < lasersToRemove; i++) {
         this.lasers.shift();
       }
     }
   }
 }
 
-function Enemy(x, y, dx, dy, height, width) {
+function Enemy(x, y, dx, dy, height, width, shotFreq) {
   this.x = x;
+  this.currX = x;
   this.y = y;
+  this.currY = y;
   this.dx = dx;
   this.dy = dy;
   this.width = width;
   this.height = height;
   this.color = colorArray[Math.floor(Math.random() * colorArray.length)];
   this.frame = 0;
+  this.hit = false;
+  this.lasers = [];
+  this.laserTotal = 4;
+  this.shotFreq = shotFreq;
+
+  this.getY = function() {
+    return this.y;
+  }
+
+  this.getX = function() {
+    return this.x;
+  }
+
+  this.getWidth = function() {
+    return this.width;
+  }
+
+  this.getHeight = function() {
+    return this.height;
+  }
+
+  this.getLasers = function() {
+    return this.lasers;
+  }
+
+  this.setHit = function(hit) {
+    this.hit = hit;
+  }
+
+  this.clear = function() {
+    this.hit = true;
+    this.x = -500;
+    this.y = -500;
+  }
+
+  this.addLaser = function() {
+    if (this.lasers.length < this.laserTotal)
+      this.lasers.push(new Laser(this.x + this.width / 2, this.y, 7, 10, 10, true));
+  }
 
   this.draw = function() {
     context.fillStyle = this.color;
@@ -119,12 +206,32 @@ function Enemy(x, y, dx, dy, height, width) {
   }
 
   this.update = function() {
-    if (!gameOver) {
+    if (!gameOver && !this.hit) {
       this.x += this.dx;
 
       if (this.x + this.width >= canvas.width || this.x <= 0) {
         this.dx = -this.dx;
         this.y += this.dy;
+      }
+
+      this.frame++;
+      if (this.frame === this.shotFreq) {
+        this.frame = 0;
+        this.addLaser();
+      }
+
+      let lasersToRemove = 0;
+      for (let i = 0; i < this.lasers.length; i++) {
+        console.log(this.lasers[i].getY())
+        this.lasers[i].update();
+
+        if (this.lasers[i].getY() >= canvas.height) {
+          lasersToRemove++;
+        }
+      }
+
+      for (let i = 0; i < lasersToRemove; i++) {
+        this.lasers.shift();
       }
 
       if (this.y > canvas.height - (this.height * 2)) gameOver = true;
@@ -134,24 +241,56 @@ function Enemy(x, y, dx, dy, height, width) {
   }
 }
 
+let player, enemy;
+let init = function() {
+  player = new Player(0, 10, 50, 50);
+  enemy = new Enemy(0, 0, 5, 25, 50, 50, 109);
 
-
-var player = new Player(0, 10, 50, 50);
-var enemy = new Enemy(0, 0, 7, 25, 50, 50);
-
-var gameLoop = function() {
-  requestAnimationFrame(gameLoop);
-  context.clearRect(0, 0, 600, 600);
-  player.update(activeKey);
-  enemy.update();
+  player.draw();
+  enemy.draw();
 }
 
-player.draw();
-enemy.draw();
+let getDistance = function(x1, y1, x2, y2) {
+  let xDistance = x2 - x1;
+  let yDistance = y2 - y1;
+
+  return Math.sqrt(xDistance ** 2 + yDistance ** 2);
+}
+
+function laserHitCheck() {
+  let playerLasers = player.getLasers();
+  let enemyLasers = enemy.getLasers();
+
+  for (let i = 0; i < playerLasers.length; i++) {
+    if (playerLasers[i].getX() >= enemy.getX() && playerLasers[i].getX() + playerLasers[i].getWidth() <= enemy.getX() + enemy.getWidth() &&
+        playerLasers[i].getY() >= enemy.getY() && playerLasers[i].getY() + playerLasers[i].getHeight() <= enemy.getY() + enemy.getHeight()) {
+      playerLasers[i].setHit(true);
+      enemy.clear();
+    }
+  }
+
+  for (let i = 0; i < enemyLasers.length; i++) {
+    if (enemyLasers[i].getX() >= player.getX() && enemyLasers[i].getX() + enemyLasers[i].getWidth() <= player.getX() + player.getWidth() &&
+      enemyLasers[i].getY() >= player.getY() && enemyLasers[i].getY() + enemyLasers[i].getHeight() <= player.getY() + player.getHeight()) {
+
+        gameOver = true;
+    }
+  }
+}
+
+let gameLoop = function() {
+  requestAnimationFrame(gameLoop);
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  player.update(activeKey);
+  enemy.update();
+  laserHitCheck();
+}
+
+init();
 gameLoop();
 
-var arrowKeyDown = false;
-var spaceDown = false;
+let arrowKeyDown = false;
+let spaceDown = false;
 document.addEventListener("keydown", (event) => {
   if (arrowKeyDown) return;
   arrowKeyDown = true;
@@ -159,12 +298,14 @@ document.addEventListener("keydown", (event) => {
   activeKey = event.keyCode;
   player.animateOn();
 });
+
 document.addEventListener("keypress", (event) => {
   if (event.keyCode === 32 && spaceDown == false) {
     player.addLaser();
     spaceDown = true;
   }
 });
+
 document.addEventListener("keyup", (event) => {
   activeKey = -1;
   player.animateOff();
