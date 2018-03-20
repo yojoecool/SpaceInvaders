@@ -498,10 +498,11 @@ document.addEventListener("keypress", (event) => {
     player.addLaser();
     spaceDown = true;
   }
-  else if (event.keyCode === 13) {
+  else if (event.keyCode === 13 && !gameStart) {
     clearInterval(preStart);
     init();
     gameLoop();
+    gameStart = true;
   }
 });
 
