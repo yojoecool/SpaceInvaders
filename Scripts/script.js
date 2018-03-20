@@ -66,13 +66,22 @@ class GamePiece {
 }
 
 class Character extends GamePiece {
-  constructor(x, y, dx, dy, width, height, color, laserTotal, enemy, bulletSpeed) {
+  constructor(x, y, dx, dy, width, height, color, laserTotal, enemy, bulletSpeed, imgSrc = "", srcX = 0, srcY = 0, srcWidth = 0, srcHeight = 0) {
     super(x, y, dx, dy, width, height, color);
 
     this.laserTotal = laserTotal;
     this.lasers = [];
     this.enemy = enemy;
     this.bulletSpeed = bulletSpeed;
+    this.sprite = null;
+    if (imgSrc != "") {
+      this.sprite = new Image();
+      this.sprite.src = imgSrc;
+    }
+    this.srcX = srcX;
+    this.srcY = srcY;
+    this.srcWidth = srcWidth;
+    this.srcHeight = srcHeight;
   }
 
   getLasers() {
@@ -99,6 +108,15 @@ class Character extends GamePiece {
 
     for (let i = 0; i < lasersToRemove; i++) {
       this.lasers.shift();
+    }
+  }
+
+  draw() {
+    if (this.sprite === null) {
+      super.draw();
+    }
+    else {
+      context.drawImage(this.sprite, this.srcX, this.srcY, this.srcWidth, this.srcHeight, this.x, this.y, this.width, this.height);
     }
   }
 }
@@ -131,7 +149,7 @@ class Laser extends GamePiece {
 }
 
 class Player extends Character {
-  constructor(x, dx, width, height) {
+  constructor(x, dx, width, height, imgSrc = "", srcX = 0, srcY = 0, srcWidth = 0, srcHeight = 0) {
     let color = colorArray[Math.floor(Math.random() * colorArray.length)];
     let y = canvas.height - height;
 
@@ -175,7 +193,7 @@ class Player extends Character {
 }
 
 class Enemy extends Character {
-  constructor(x, y, dx, dy, width, height, shotFreq) {
+  constructor(x, y, dx, dy, width, height, shotFreq, imgSrc = "", srcX = 0, srcY = 0, srcWidth = 0, srcHeight = 0) {
     let color = colorArray[Math.floor(Math.random() * colorArray.length)];
     super(x, y, dx, dy, width, height, color, 4, true, 7);
     this.frame = 0;
