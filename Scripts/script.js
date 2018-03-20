@@ -50,6 +50,14 @@ function Laser(x, y, dy, width, height, enemyLaser = true) {
     this.hit = hit;
   }
 
+  this.setY = function(y) {
+    this.y = y;
+  }
+
+  this.setX = function(x) {
+    this.x = x;
+  }
+
   this.draw = function() {
     context.fillStyle = this.color;
     context.beginPath();
@@ -79,6 +87,7 @@ function Player(x, dx, width, height) {
   this.animate = false;
   this.laserTotal = 3;
   this.lasers = [];
+  this.lives = 3;
 
   this.getY = function() {
     return this.y;
@@ -100,12 +109,22 @@ function Player(x, dx, width, height) {
     return this.lasers;
   }
 
+  this.getLives = function() {
+    return this.lives;
+  }
+
   this.animateOn = function() {
     this.animate = true;
   }
 
   this.animateOff = function() {
     this.animate = false;
+  }
+
+  this.loseLife = function() {
+    this.lives--;
+    if (this.lives === 0)
+      gameOver = true;
   }
 
   this.draw = function() {
@@ -222,7 +241,6 @@ function Enemy(x, y, dx, dy, height, width, shotFreq) {
 
       let lasersToRemove = 0;
       for (let i = 0; i < this.lasers.length; i++) {
-        console.log(this.lasers[i].getY())
         this.lasers[i].update();
 
         if (this.lasers[i].getY() >= canvas.height) {
@@ -272,8 +290,11 @@ function laserHitCheck() {
   for (let i = 0; i < enemyLasers.length; i++) {
     if (enemyLasers[i].getX() >= player.getX() && enemyLasers[i].getX() + enemyLasers[i].getWidth() <= player.getX() + player.getWidth() &&
       enemyLasers[i].getY() >= player.getY() && enemyLasers[i].getY() + enemyLasers[i].getHeight() <= player.getY() + player.getHeight()) {
+        enemyLasers[i].setHit(true);
+        enemyLasers[i].setX(-500);
+        enemyLasers[i].setY(-500);
 
-        gameOver = true;
+        player.loseLife();
     }
   }
 }
