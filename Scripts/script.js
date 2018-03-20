@@ -5,6 +5,13 @@ let context = canvas.getContext("2d");
 
 let activeKey = 0;
 let gameOver = false;
+let moveDownNextTick = false;
+let ded = "  _____" + "\n" +
+" /     \\" + "\n" +
+"| () () |" + "\n" +
+" \\  ^  /" + "\n" +
+"  |||||" + "\n" +
+"  |||||" + "\n";
 
 let colorArray = [
   "#124e78",
@@ -13,6 +20,13 @@ let colorArray = [
   "#d74e09",
   "#6e0e0a"
 ];
+
+let drawBackground = function() {
+  context.beginPath();
+  context.rect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "black";
+  context.fill();
+}
 
 class GamePiece {
   constructor(x, y, dx, dy, width, height, color) {
@@ -29,8 +43,16 @@ class GamePiece {
     return this.y;
   }
 
+  getDy() {
+    return this.dy;
+  }
+
   getX() {
     return this.x;
+  }
+
+  getDx() {
+    return this.dx;
   }
 
   getWidth() {
@@ -172,9 +194,12 @@ class Player extends Character {
   }
 
   loseLife() {
+    console.log("You've been hit!");
     this.lives--;
-    if (this.lives === 0)
+    if (this.lives === 0) {
+      console.log(ded);
       gameOver = true;
+    }
   }
 
   update(keycode) {
@@ -216,8 +241,8 @@ class Enemy extends Character {
       this.x += this.dx;
 
       if ((this.x + this.width >= canvas.width || this.x <= 0)) {
-        this.dx = -this.dx;
-          this.y += this.dy;
+        // moveAllEnemiesDown();
+        moveDownNextTick = true;
       }
 
       this.frame++;
@@ -237,15 +262,28 @@ class Enemy extends Character {
 
 let player;
 let enemies = [];
-let init = function() {
-  player = new Player((canvas.width / 2) - 25, 10, 50, 50);
 
+let level1 = function() {
+  enemies = [];
+  let enemyWidth = 35;
+  let enemyHeight = 35;
   for (let i = 0; i < 5; i++) {
-    let fireRate = Math.floor(Math.random() * 250) + 100;
-    enemies.push(new Enemy(i * 100, 0, 5, 25, 50, 50, fireRate));
-    enemies[i].draw();
-  }
+    for (let j = 0; j < 5; j++) {
+      let fireRate = Math.floor(Math.random() * 1000) + 300;
+      let x = i * (2 * enemyWidth);
+      let y = j * (1.5 * enemyHeight);
 
+      enemies.push(new Enemy(x, y, 3, 25, enemyWidth, enemyHeight, fireRate));
+    }
+  }
+}
+
+let init = function() {
+  drawBackground();
+
+  level1();
+
+  player = new Player((canvas.width / 2) - 25, 10, 50, 50);
   player.draw();
 }
 
@@ -279,10 +317,21 @@ let laserHitCheck = function() {
   }
 }
 
+function moveAllEnemiesDownCheck() {
+  if (moveDownNextTick) {
+    for (let i = 0; i < enemies.length; i++) {
+      enemies[i].setY(enemies[i].getY() + enemies[i].getDy());
+      enemies[i].setDx(enemies[i].getDx() * -1);
+    }
+    moveDownNextTick = false;
+  }
+}
+
 let gameLoop = function() {
   requestAnimationFrame(gameLoop);
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  drawBackground();
   player.update(activeKey);
+  moveAllEnemiesDownCheck();
   for (let i = 0; i < enemies.length; i++) {
     enemies[i].update();
   }
