@@ -5,15 +5,13 @@ let context = canvas.getContext("2d");
 
 let activeKey = 0;
 let gameOver = false;
-let spacesRight = 0;
-let spaceLeft = 0;
 
 let colorArray = [
-  "#092140",
-  "#024959",
-  "#F2C777",
-  "#E6E7E8",
-  "#BF2A2A"
+  "#124e78",
+  "#f0f0c9",
+  "#f2bb05",
+  "#d74e09",
+  "#6e0e0a"
 ];
 
 class GamePiece {
@@ -199,9 +197,9 @@ class Enemy extends Character {
     if (!gameOver && !this.hit) {
       this.x += this.dx;
 
-      if (this.x + this.width >= canvas.width || this.x <= 0) {
+      if ((this.x + this.width >= canvas.width || this.x <= 0)) {
         this.dx = -this.dx;
-        this.y += this.dy;
+          this.y += this.dy;
       }
 
       this.frame++;
@@ -246,6 +244,7 @@ let laserHitCheck = function() {
       if (playerLasers[i].getX() >= enemies[j].getX() && playerLasers[i].getX() + playerLasers[i].getWidth() <= enemies[j].getX() + enemies[j].getWidth() &&
           playerLasers[i].getY() >= enemies[j].getY() && playerLasers[i].getY() + playerLasers[i].getHeight() <= enemies[j].getY() + enemies[j].getHeight()) {
         playerLasers[i].setHit(true);
+        playerLasers[i].setX(-500);
         enemies[j].clear();
       }
     }
