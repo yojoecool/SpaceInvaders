@@ -1,6 +1,11 @@
 /* font-family: 'Audiowide', cursive;
 font-family: 'Press Start 2P', cursive; */
 
+@font-face {
+  font-family: "PressStart2P";
+  src: url("../fonts/PressStart2P.ttf");
+}
+
 html, body {
   height: 100%;
 }
@@ -14,4 +19,5 @@ body {
 
 canvas {
   outline: 1px solid black;
+  font-family: PressStart2P;
 }

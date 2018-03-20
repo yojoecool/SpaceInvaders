@@ -350,6 +350,7 @@ class Enemy extends Character {
 
 let player;
 let enemies = [];
+let levels = [];
 
 let level1 = function() {
   enemies = [];
@@ -367,8 +368,10 @@ let level1 = function() {
   }
 }
 
+levels.push(level1);
+
 let init = function() {
-  level1();
+  levels[0]();
   player = new Player((canvas.width / 2) - 25, 10, 65, 45, spriteSheet, 150, 637, 73, 53);
 }
 
@@ -412,6 +415,18 @@ function moveAllEnemiesDownCheck() {
   }
 }
 
+var flash = true;
+let drawStart = function() {
+  drawBackground();
+  if (flash) {
+    context.font = "30px 'Press Start 2P', cursive";
+    context.fillStyle = "white";
+    context.fillText("Press Enter To Start", 95, canvas.height / 2);
+    flash = false;
+  }
+  else flash = true;
+}
+
 let gameLoop = function() {
   requestAnimationFrame(gameLoop);
   drawBackground();
@@ -423,9 +438,13 @@ let gameLoop = function() {
   laserHitCheck();
 }
 
-// init();
-// gameLoop();
 
+// Before starting game
+drawStart();
+var preStart = setInterval(drawStart, 400);
+
+
+// Listener Events
 let arrowKeyDown = false;
 let spaceDown = false;
 document.addEventListener("keydown", (event) => {
@@ -433,15 +452,16 @@ document.addEventListener("keydown", (event) => {
   arrowKeyDown = true;
 
   activeKey = event.keyCode;
-  player.animateOn();
+  if (player != undefined) player.animateOn();
 });
 
 document.addEventListener("keypress", (event) => {
-  if (event.keyCode === 32 && spaceDown == false) {
+  if (event.keyCode === 32 && spaceDown == false && player != undefined) {
     player.addLaser();
     spaceDown = true;
   }
   else if (event.keyCode === 13) {
+    clearInterval(preStart);
     init();
     gameLoop();
   }
@@ -449,7 +469,7 @@ document.addEventListener("keypress", (event) => {
 
 document.addEventListener("keyup", (event) => {
   activeKey = -1;
-  player.animateOff();
+  if (player != undefined) player.animateOff();
   arrowKeyDown = false;
   if (event.keyCode === 32) spaceDown = false;
 });
