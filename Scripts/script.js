@@ -5,6 +5,8 @@ let context = canvas.getContext("2d");
 
 let activeKey = 0;
 let gameOver = false;
+let spacesRight = 0;
+let spaceLeft = 0;
 
 let colorArray = [
   "#092140",
@@ -47,6 +49,14 @@ class GamePiece {
 
   setX(x) {
     this.x = x;
+  }
+
+  setDx(dx) {
+    this.dx = dx;
+  }
+
+  setDy(dy) {
+    this.dy = dy;
   }
 
   draw() {
@@ -209,24 +219,35 @@ class Enemy extends Character {
   }
 }
 
-let player, enemy;
+let player;
+let enemies = [];
 let init = function() {
-  player = new Player(0, 10, 50, 50);
-  enemy = new Enemy(0, 0, 5, 25, 50, 50, 109);
+  player = new Player((canvas.width / 2) - 25, 10, 50, 50);
+
+  for (let i = 0; i < 5; i++) {
+    let fireRate = Math.floor(Math.random() * 250) + 100;
+    enemies.push(new Enemy(i * 100, 0, 5, 25, 50, 50, fireRate));
+    enemies[i].draw();
+  }
 
   player.draw();
-  enemy.draw();
 }
 
 let laserHitCheck = function() {
   let playerLasers = player.getLasers();
-  let enemyLasers = enemy.getLasers();
+  let enemyLasers = [];
+
+  for (let i = 0; i < enemies.length; i++) {
+    enemyLasers = enemyLasers.concat(enemies[i].getLasers());
+  }
 
   for (let i = 0; i < playerLasers.length; i++) {
-    if (playerLasers[i].getX() >= enemy.getX() && playerLasers[i].getX() + playerLasers[i].getWidth() <= enemy.getX() + enemy.getWidth() &&
-        playerLasers[i].getY() >= enemy.getY() && playerLasers[i].getY() + playerLasers[i].getHeight() <= enemy.getY() + enemy.getHeight()) {
-      playerLasers[i].setHit(true);
-      enemy.clear();
+    for (let j = 0; j < enemies.length; j++) {
+      if (playerLasers[i].getX() >= enemies[j].getX() && playerLasers[i].getX() + playerLasers[i].getWidth() <= enemies[j].getX() + enemies[j].getWidth() &&
+          playerLasers[i].getY() >= enemies[j].getY() && playerLasers[i].getY() + playerLasers[i].getHeight() <= enemies[j].getY() + enemies[j].getHeight()) {
+        playerLasers[i].setHit(true);
+        enemies[j].clear();
+      }
     }
   }
 
@@ -245,7 +266,9 @@ let gameLoop = function() {
   requestAnimationFrame(gameLoop);
   context.clearRect(0, 0, canvas.width, canvas.height);
   player.update(activeKey);
-  enemy.update();
+  for (let i = 0; i < enemies.length; i++) {
+    enemies[i].update();
+  }
   laserHitCheck();
 }
 
