@@ -5,8 +5,6 @@ let context = canvas.getContext("2d");
 
 let activeKey = 0;
 let gameOver = false;
-let gunShot = false;
-let enemyInterval = 0;
 
 let colorArray = [
   "#092140",
@@ -16,56 +14,85 @@ let colorArray = [
   "#BF2A2A"
 ];
 
-function Laser(x, y, dy, width, height, enemyLaser = true) {
-  this.x = x;
-  this.y = y;
-  this.dy = dy;
-  this.width = width;
-  this.height = height;
-  this.color = '#ff0000';
-  this.enemyLaser = enemyLaser;
-  this.hit = false;
+class GamePiece {
+  constructor(x, y, dx, dy, width, height, color) {
+    this.x = x;
+    this.y = y;
+    this.dx = dx;
+    this.dy = dy;
+    this.width = width;
+    this.height = height;
+    this.color = color;
+  }
 
-  this.getY = function() {
+  getY() {
     return this.y;
   }
 
-  this.getX = function() {
+  getX() {
     return this.x;
   }
 
-  this.getWidth = function() {
+  getWidth() {
     return this.width;
   }
 
-  this.getHeight = function() {
+  getHeight() {
     return this.height;
   }
 
-  this.getHit = function() {
-    return this.hit;
-  }
-
-  this.setHit = function(hit) {
-    this.hit = hit;
-  }
-
-  this.setY = function(y) {
+  setY(y) {
     this.y = y;
   }
 
-  this.setX = function(x) {
+  setX(x) {
     this.x = x;
   }
 
-  this.draw = function() {
+  draw() {
     context.fillStyle = this.color;
     context.beginPath();
     context.fillRect(this.x, this.y, this.height, this.width);
     context.fill();
   }
+}
 
-  this.update = function() {
+class Character extends GamePiece {
+  constructor(x, y, dx, dy, width, height, color, laserTotal, enemy, bulletSpeed) {
+    super(x, y, dx, dy, width, height, color);
+
+    this.laserTotal = laserTotal;
+    this.lasers = [];
+    this.enemy = enemy;
+    this.bulletSpeed = bulletSpeed;
+  }
+
+  getLasers() {
+    return this.lasers;
+  }
+
+  addLaser() {
+    if (this.lasers.length < this.laserTotal)
+      this.lasers.push(new Laser(this.x + this.width / 2, this.y, this.bulletSpeed, 10, 10, this.enemy));
+  }
+}
+
+class Laser extends GamePiece {
+  constructor(x, y, dy, width, height, enemyLaser) {
+    super(x, y, 0, dy, width, height, '#ff0000');
+    this.enemyLaser = enemyLaser;
+    this.hit = false;
+  }
+
+  getHit() {
+    return this.hit;
+  }
+
+  setHit(hit) {
+    this.hit = hit;
+  }
+
+  update() {
       if (!this.enemyLaser) {
         if (this.y > 0)
           this.y -= this.dy;
@@ -77,69 +104,36 @@ function Laser(x, y, dy, width, height, enemyLaser = true) {
   }
 }
 
-function Player(x, dx, width, height) {
-  this.x = x;
-  this.y = canvas.height - height;
-  this.dx = dx;
-  this.width = width;
-  this.height = height;
-  this.color = colorArray[Math.floor(Math.random() * colorArray.length)];
-  this.animate = false;
-  this.laserTotal = 3;
-  this.lasers = [];
-  this.lives = 3;
+class Player extends Character {
+  constructor(x, dx, width, height) {
+    let color = colorArray[Math.floor(Math.random() * colorArray.length)];
+    let y = canvas.height - height;
 
-  this.getY = function() {
-    return this.y;
+    super(x, y, dx, 0, width, height, color, 3, false, 12);
+
+    this.animate = false;
+    this.lives = 3;
   }
 
-  this.getX = function() {
-    return this.x;
-  }
-
-  this.getWidth = function() {
-    return this.width;
-  }
-
-  this.getHeight = function() {
-    return this.height;
-  }
-
-  this.getLasers = function() {
-    return this.lasers;
-  }
-
-  this.getLives = function() {
+  getLives() {
     return this.lives;
   }
 
-  this.animateOn = function() {
+  animateOn() {
     this.animate = true;
   }
 
-  this.animateOff = function() {
+  animateOff() {
     this.animate = false;
   }
 
-  this.loseLife = function() {
+  loseLife() {
     this.lives--;
     if (this.lives === 0)
       gameOver = true;
   }
 
-  this.draw = function() {
-    context.fillStyle = this.color;
-    context.beginPath();
-    context.fillRect(this.x, this.y, this.height, this.width);
-    context.fill();
-  }
-
-  this.addLaser = function() {
-    if (this.lasers.length < this.laserTotal)
-      this.lasers.push(new Laser(this.x + this.width / 2, this.y, 10, 10, 10, false));
-  }
-
-  this.update = function(keycode) {
+  update(keycode) {
     if (!gameOver) {
       if (this.animate) {
         if (keycode === 39 && this.x + this.width + this.dx <= canvas.width)
@@ -166,65 +160,26 @@ function Player(x, dx, width, height) {
   }
 }
 
-function Enemy(x, y, dx, dy, height, width, shotFreq) {
-  this.x = x;
-  this.currX = x;
-  this.y = y;
-  this.currY = y;
-  this.dx = dx;
-  this.dy = dy;
-  this.width = width;
-  this.height = height;
-  this.color = colorArray[Math.floor(Math.random() * colorArray.length)];
-  this.frame = 0;
-  this.hit = false;
-  this.lasers = [];
-  this.laserTotal = 4;
-  this.shotFreq = shotFreq;
-
-  this.getY = function() {
-    return this.y;
+class Enemy extends Character {
+  constructor(x, y, dx, dy, width, height, shotFreq) {
+    let color = colorArray[Math.floor(Math.random() * colorArray.length)];
+    super(x, y, dx, dy, width, height, color, 4, true, 7);
+    this.frame = 0;
+    this.hit = false;
+    this.shotFreq = shotFreq;
   }
 
-  this.getX = function() {
-    return this.x;
-  }
-
-  this.getWidth = function() {
-    return this.width;
-  }
-
-  this.getHeight = function() {
-    return this.height;
-  }
-
-  this.getLasers = function() {
-    return this.lasers;
-  }
-
-  this.setHit = function(hit) {
+  setHit(hit) {
     this.hit = hit;
   }
 
-  this.clear = function() {
+  clear() {
     this.hit = true;
     this.x = -500;
     this.y = -500;
   }
 
-  this.addLaser = function() {
-    if (this.lasers.length < this.laserTotal)
-      this.lasers.push(new Laser(this.x + this.width / 2, this.y, 7, 10, 10, true));
-  }
-
-  this.draw = function() {
-    context.fillStyle = this.color;
-    context.beginPath();
-    context.fillRect(this.x, this.y, this.height, this.width);
-    context.fill();
-  }
-
-  this.update = function() {
+  update() {
     if (!gameOver && !this.hit) {
       this.x += this.dx;
 
@@ -268,14 +223,7 @@ let init = function() {
   enemy.draw();
 }
 
-let getDistance = function(x1, y1, x2, y2) {
-  let xDistance = x2 - x1;
-  let yDistance = y2 - y1;
-
-  return Math.sqrt(xDistance ** 2 + yDistance ** 2);
-}
-
-function laserHitCheck() {
+let laserHitCheck = function() {
   let playerLasers = player.getLasers();
   let enemyLasers = enemy.getLasers();
 
