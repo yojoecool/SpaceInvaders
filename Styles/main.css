@@ -1,6 +1,3 @@
-/* font-family: 'Audiowide', cursive;
-font-family: 'Press Start 2P', cursive; */
-
 @font-face {
   font-family: "PressStart2P";
   src: url("../fonts/PressStart2P.ttf");
@@ -18,6 +15,17 @@ body {
 }
 
 canvas {
-  outline: 1px solid black;
-  font-family: PressStart2P;
+  font-family: "PressStart2P";
+}
+
+#game-canvas {
+  outline: 1px solid white;
+}
+
+#background-canvas {
+  border: 1px solid black;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: -1;
 }

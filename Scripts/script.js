@@ -1,6 +1,6 @@
 console.log("script loaded");
 
-let canvas = document.querySelector("canvas");
+let canvas = document.querySelector("#game-canvas");
 let context = canvas.getContext("2d");
 
 let spriteSheet = "Images/invaders.gif";
@@ -238,6 +238,10 @@ class Player extends Character {
     return this.lives;
   }
 
+  setLives(lives) {
+    this.lives = lives;
+  }
+
   animateOn() {
     this.animate = true;
   }
@@ -340,6 +344,7 @@ class Enemy extends Character {
 
       if (this.y > canvas.height - (this.height * 2)) {
         gameOver = true;
+        player.setLives(0);
         console.log(ded);
       }
 
@@ -363,7 +368,7 @@ let level1 = function() {
       let x = i * (2 * enemyWidth);
       let y = j * (1.5 * enemyHeight) + 50;
 
-      enemies.push(new Enemy(x, y, 3, 25, enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
+      enemies.push(new Enemy(x, y, 2, 25, enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
     }
   }
 }
@@ -427,6 +432,24 @@ let drawStart = function() {
   else flash = true;
 }
 
+let life = new Image();
+life.src = spriteSheet;
+let drawLives = function() {
+  context.beginPath();
+  context.moveTo(0, 45);
+  context.lineTo(canvas.width, 45);
+  context.strokeStyle = "white";
+  context.stroke();
+
+  context.font = "15px 'Press Start 2P', cursive";
+  context.fillStyle = "white";
+  context.fillText("Lives", canvas.width - 320, 30);
+
+  for (let i = 0; i < player.getLives(); i++) {
+    context.drawImage(life, 150, 637, 73, 53, canvas.width - 210 + (i * 70), 8, 35, 28);
+  }
+}
+
 let gameLoop = function() {
   requestAnimationFrame(gameLoop);
   drawBackground();
@@ -436,6 +459,7 @@ let gameLoop = function() {
     enemies[i].update();
   }
   laserHitCheck();
+  drawLives();
 }
 
 
