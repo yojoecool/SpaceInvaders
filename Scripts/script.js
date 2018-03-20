@@ -3,6 +3,8 @@ console.log("script loaded");
 let canvas = document.querySelector("canvas");
 let context = canvas.getContext("2d");
 
+let spriteSheet = "Images/invaders.gif";
+
 let activeKey = 0;
 let gameOver = false;
 let moveDownNextTick = false;
@@ -112,7 +114,7 @@ class Character extends GamePiece {
 
   addLaser() {
     if (this.lasers.length < this.laserTotal)
-      this.lasers.push(new Laser(this.x + this.width / 2, this.y, this.bulletSpeed, 10, 10, this.enemy));
+      this.lasers.push(new Laser(Math.floor(this.x + this.width / 2), this.y, this.bulletSpeed, 10, 10, this.enemy));
   }
 
   removeLasers() {
@@ -175,7 +177,7 @@ class Player extends Character {
     let color = colorArray[Math.floor(Math.random() * colorArray.length)];
     let y = canvas.height - height;
 
-    super(x, y, dx, 0, width, height, color, 3, false, 12);
+    super(x, y, dx, 0, width, height, color, 3, false, 12, imgSrc, srcX, srcY, srcWidth, srcHeight);
 
     this.animate = false;
     this.lives = 3;
@@ -241,7 +243,6 @@ class Enemy extends Character {
       this.x += this.dx;
 
       if ((this.x + this.width >= canvas.width || this.x <= 0)) {
-        // moveAllEnemiesDown();
         moveDownNextTick = true;
       }
 
@@ -279,12 +280,8 @@ let level1 = function() {
 }
 
 let init = function() {
-  drawBackground();
-
   level1();
-
-  player = new Player((canvas.width / 2) - 25, 10, 50, 50);
-  player.draw();
+  player = new Player((canvas.width / 2) - 25, 10, 65, 45, spriteSheet, 150, 637, 73, 53);
 }
 
 let laserHitCheck = function() {
