@@ -5,9 +5,6 @@ let context = canvas.getContext("2d");
 
 let spriteSheet = "Images/invaders.gif";
 
-let activeKey = 0;
-let gameOver = false;
-let moveDownNextTick = false;
 let ded = "  _____" + "\n" +
 " /     \\" + "\n" +
 "| () () |" + "\n" +
@@ -22,6 +19,44 @@ let colorArray = [
   "#d74e09",
   "#6e0e0a"
 ];
+
+let enemySprites = [
+  {
+    char: "MedInv",
+    x1: 19,
+    y1: 14,
+    x2: 165,
+    y2: 14,
+    height: 80,
+    width: 110,
+    animate: 70
+  },
+  {
+    char: "LarInv",
+    x1: 19,
+    y1: 134,
+    x2: 160,
+    y2: 134,
+    height: 80,
+    width: 120,
+    animate: 100
+  },
+  {
+    char: "SmaInv",
+    x1: 312,
+    y1: 14,
+    x2: 428,
+    y2: 14,
+    height: 80,
+    width: 80,
+    animate: 35
+  }
+];
+
+let activeKey = 0;
+let gameOver = false;
+let moveDownNextTick = false;
+let gameStart = false;
 
 let drawBackground = function() {
   context.beginPath();
@@ -108,13 +143,29 @@ class Character extends GamePiece {
     this.srcHeight = srcHeight;
   }
 
+  setSrcX(srcX) {
+    this.srcX = srcX;
+  }
+
+  setSrcY(srcY) {
+    this.srcY = srcY;
+  }
+
+  setSrcWidth(srcWidth) {
+    this.srcWidth = srcWidth;
+  }
+
+  setSrcHeight(srcHeight) {
+    this.srcHeight = srcHeight;
+  }
+
   getLasers() {
     return this.lasers;
   }
 
   addLaser() {
     if (this.lasers.length < this.laserTotal)
-      this.lasers.push(new Laser(Math.floor(this.x + this.width / 2), this.y, this.bulletSpeed, 10, 10, this.enemy));
+      this.lasers.push(new Laser(Math.floor(this.x + this.width / 2) - 5, this.y, this.bulletSpeed, 10, 10, this.enemy));
   }
 
   removeLasers() {
@@ -220,12 +271,26 @@ class Player extends Character {
 }
 
 class Enemy extends Character {
-  constructor(x, y, dx, dy, width, height, shotFreq, imgSrc = "", srcX = 0, srcY = 0, srcWidth = 0, srcHeight = 0) {
+  constructor(x, y, dx, dy, width, height, shotFreq, imgSrc = "", enemyType = 0) {
     let color = colorArray[Math.floor(Math.random() * colorArray.length)];
-    super(x, y, dx, dy, width, height, color, 4, true, 7);
-    this.frame = 0;
+    let spriteInfo = enemySprites[enemyType];
+
+    let srcX = spriteInfo.x1;
+    let srcY = spriteInfo.y1;
+    let srcWidth = spriteInfo.width;
+    let srcHeight = spriteInfo.height;
+
+    super(x, y, dx, dy, width, height, color, 4, true, 7, imgSrc, srcX, srcY, srcWidth, srcHeight);
+
+    this.enemyType = enemyType;
+    this.shotFrame = 0;
     this.hit = false;
     this.shotFreq = shotFreq;
+    this.enemyType = enemyType;
+    this.animationFrame = 0;
+    this.animationFreq = enemySprites[enemyType].animate;
+    this.firstAniFrame = true;
+    this.spriteInfo = spriteInfo;
   }
 
   setHit(hit) {
@@ -246,15 +311,37 @@ class Enemy extends Character {
         moveDownNextTick = true;
       }
 
-      this.frame++;
-      if (this.frame === this.shotFreq) {
-        this.frame = 0;
+      this.shotFrame++;
+      if (this.shotFrame === this.shotFreq) {
+        this.shotFrame = 0;
         this.addLaser();
+      }
+
+      this.animationFrame++;
+      if (this.animationFrame === this.animationFreq) {
+        this.srcWidth = this.spriteInfo.width;
+        this.srcHeight = this.spriteInfo.height;
+
+        if (this.firstAniFrame) {
+          this.srcX = this.spriteInfo.x2;
+          this.srcY = this.spriteInfo.y2;
+          this.firstAniFrame = false;
+        }
+        else {
+          this.srcX = this.spriteInfo.x1;
+          this.srcY = this.spriteInfo.y1;
+          this.firstAniFrame = true;
+        }
+
+        this.animationFrame = 0
       }
 
       this.removeLasers();
 
-      if (this.y > canvas.height - (this.height * 2)) gameOver = true;
+      if (this.y > canvas.height - (this.height * 2)) {
+        gameOver = true;
+        console.log(ded);
+      }
 
       this.draw();
     }
@@ -266,15 +353,16 @@ let enemies = [];
 
 let level1 = function() {
   enemies = [];
-  let enemyWidth = 35;
-  let enemyHeight = 35;
+  let enemyWidth = 42;
+  let enemyHeight = 37;
   for (let i = 0; i < 5; i++) {
     for (let j = 0; j < 5; j++) {
-      let fireRate = Math.floor(Math.random() * 1000) + 300;
+      let enemyType = j % 3;
+      let fireRate = Math.floor(Math.random() * 1000) + 250;
       let x = i * (2 * enemyWidth);
-      let y = j * (1.5 * enemyHeight);
+      let y = j * (1.5 * enemyHeight) + 50;
 
-      enemies.push(new Enemy(x, y, 3, 25, enemyWidth, enemyHeight, fireRate));
+      enemies.push(new Enemy(x, y, 3, 25, enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
     }
   }
 }
@@ -335,8 +423,8 @@ let gameLoop = function() {
   laserHitCheck();
 }
 
-init();
-gameLoop();
+// init();
+// gameLoop();
 
 let arrowKeyDown = false;
 let spaceDown = false;
@@ -352,6 +440,10 @@ document.addEventListener("keypress", (event) => {
   if (event.keyCode === 32 && spaceDown == false) {
     player.addLaser();
     spaceDown = true;
+  }
+  else if (event.keyCode === 13) {
+    init();
+    gameLoop();
   }
 });
 
