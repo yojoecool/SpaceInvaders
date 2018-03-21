@@ -87,10 +87,12 @@ let gameOver = false;
 let gameWon = false;
 let moveDownNextTick = false;
 let gameStart = false;
+let gamePaused = false;
 let score = 0;
 let numOfEnemies = 0;
 let level = 1;
 let nextLevelDelay = 0;
+let gamePausedDelay = 0;
 
 /* Base Functions (not used for game loop) */
 let playSounds = function(sound) {
@@ -225,6 +227,13 @@ class Character extends GamePiece {
       this.lasers.push(new Laser(Math.floor(this.x + this.width / 2) - 3, this.y, this.bulletSpeed, 6, 6, this.enemy));
   }
 
+  clearLasers() {
+    for (let i = 0; i < this.lasers.length; i++) {
+      this.lasers[i].clear();
+    }
+    this.lasers = [];
+  }
+
   //remove lasers from the characther's laser array as they disappear from the screen
   removeLasers() {
     let removeLasers = [];
@@ -297,6 +306,16 @@ class Player extends Character {
     super(x, y, dx, 0, width, height, color, 2, false, 9, imgSrc, srcX, srcY, srcWidth, srcHeight);
 
     this.lives = 5;
+    this.ogSrcX = srcX;
+    this.ogSrcY = srcY;
+    this.ogSrcWidth = srcWidth;
+    this.ogSrcHeight = srcHeight;
+    this.explodingImg = null;
+    this.explodingImgX = 241;
+    this.explodingImgY = 634;
+    this.explodingImgWidth = 105;
+    this.explodingImgHeight = 60;
+    this.explodingTick = 0;
   }
 
   // add laser and player sound effect
@@ -313,6 +332,13 @@ class Player extends Character {
   loseLife() {
     console.log("You've been hit!");
     this.lives--;
+
+    this.srcX = this.explodingImgX;
+    this.srcY = this.explodingImgY;
+    this.srcWidth = this.explodingImgWidth;
+    this.srcHeight = this.explodingImgHeight;
+    this.explodingTick++;
+
     playSounds(explosion);
     if (this.lives === 0) {
       console.log(ded);
@@ -323,6 +349,17 @@ class Player extends Character {
   //update location of player based on which arrow button is pressed. prevent movement that would be out of bounds
   update(keycode) {
     if (!gameOver) {
+      if (this.explodingTick === 150) {
+        this.srcX = this.ogSrcX;
+        this.srcY = this.ogSrcY;
+        this.srcWidth = this.ogSrcWidth;
+        this.srcHeight = this.ogSrcHeight;
+        this.explodingTick = 0;
+      }
+      else if (this.explodingTick != 0) {
+        this.explodingTick++;
+      }
+
       if (keycode === 39 && this.x + this.width + this.dx <= canvas.width)
         this.x += this.dx;
       else if (keycode === 37 && this.x - this.dx >= 0)
@@ -393,7 +430,7 @@ class Enemy extends Character {
 
   //update enemies each tick
   update() {
-    if (!gameOver && !this.hit) {
+    if (!gameOver && !this.hit && !gamePaused) {
       this.x += this.dx;
 
       //if an edge is hit, moveDownNextTick lets all enemies know to move down a level
@@ -463,7 +500,7 @@ let createEnemies = function(speed) {
       let x = i * (2 * enemyWidth * 1.15);
       let y = j * (1.5 * enemyHeight) + 55;
 
-      enemies.push(new Enemy(x, y, speed, enemyHeight * (2/3), enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
+      enemies.push(new Enemy(x, y, speed, enemyHeight * (1 / 2), enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
       numOfEnemies++;
     }
   }
@@ -537,6 +574,7 @@ let laserHitCheck = function() {
         enemyLasers[i].clear();
 
         score -= 1100;
+        gamePaused = true;
         player.loseLife();
     }
   }
@@ -627,6 +665,28 @@ let youWin = function() {
   // playSounds(winMusic);
 }
 
+//draw the text indicating that the user has won
+let checkGamePaused = function() {
+  if (gamePaused && !gameOver) {
+    if (gamePausedDelay < 150) {
+      activeKey = -1;
+      player.clearLasers();
+      for (let i = 0; i < enemies.length; i++) {
+        enemies[i].clearLasers();
+      }
+      gamePausedDelay++;
+      context.font = "40px 'Press Start 2P', cursive";
+      context.fillStyle = "white";
+      context.fillText(`Lives: ${player.getLives()}`, canvas.width / 2 - 160, canvas.height / 2);
+    }
+    else {
+      gamePausedDelay = 0;
+      gamePaused = false;
+      player.setX((canvas.width / 2) - 25);
+    }
+  }
+}
+
 //if gameOver has been set to true, display the game over screen
 let checkGameOver = function() {
   if (gameOver) {
@@ -664,7 +724,7 @@ let playEnemyMovementSounds = function() {
   let maxTick = 15 + Math.floor(50 / level);
 
   //only play sound or increment the tick count between plays if this condition is met
-  let gameCondition = gameStart && !gameOver && !gameWon && nextLevelDelay === 0;
+  let gameCondition = gameStart && !gameOver && !gameWon && !gamePaused && nextLevelDelay === 0;
   if (audioTick === maxTick && gameCondition) {
     playSounds(enemySounds[enemyAudioTrack]);
     enemyAudioTrack = (enemyAudioTrack + 1) % 4;
@@ -689,6 +749,7 @@ let gameLoop = function() {
   }
   drawScore();
   drawLives();
+  checkGamePaused();
   endOfLevelCheck();
   checkGameOver();
   playEnemyMovementSounds();
@@ -707,11 +768,12 @@ let spaceDown = false;
 
 //sets what key is currently being pressed down (used in player's update function)
 document.addEventListener("keydown", (event) => {
-  activeKey = event.keyCode;
+  if (!gamePaused)
+    activeKey = event.keyCode;
 });
 
 document.addEventListener("keypress", (event) => {
-  if (event.keyCode === 32 && spaceDown == false && player != undefined) {
+  if (event.keyCode === 32 && spaceDown == false && player != undefined && !gamePaused && !gameOver && !gameWon) {
     player.addLaser();
     spaceDown = true;
   }
