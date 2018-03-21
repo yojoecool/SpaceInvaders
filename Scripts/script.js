@@ -91,9 +91,11 @@ let level = 1;
 let nextLevelDelay = 0;
 
 let playSounds = function(sound) {
-  sound.pause();
-  sound.currentTime = 0;
-  sound.play();
+  if (sound.currentTime > 0) {
+    sound.pause();
+    sound.currentTime = 0;
+  }
+  if (sound.paused) sound.play();
 }
 
 let drawBackground = function() {
@@ -258,6 +260,12 @@ class Laser extends GamePiece {
     this.hit = hit;
   }
 
+  clear() {
+    this.x = -500;
+    this.y = -500;
+    this.hit = true;
+  }
+
   update() {
       if (!this.enemyLaser) {
         if (this.y > 0)
@@ -265,7 +273,7 @@ class Laser extends GamePiece {
       }
       else this.y += this.dy;
 
-      if (!this.hit)
+      if (!this.hit && this.x > 0 && this.y > 0)
         this.draw();
   }
 }
@@ -362,6 +370,10 @@ class Enemy extends Character {
       this.y = -500;
       numOfEnemies--;
       playSounds(invaderKilled);
+
+      for (let i = 0; i < this.lasers.length; i++) {
+        this.lasers[i].clear();
+      }
     }
   }
 
@@ -479,8 +491,7 @@ let laserHitCheck = function() {
     for (let j = 0; j < enemies.length; j++) {
       if (playerLasers[i].getX() >= enemies[j].getX() && playerLasers[i].getX() + playerLasers[i].getWidth() <= enemies[j].getX() + enemies[j].getWidth() &&
           playerLasers[i].getY() >= enemies[j].getY() && playerLasers[i].getY() + playerLasers[i].getHeight() <= enemies[j].getY() + enemies[j].getHeight()) {
-        playerLasers[i].setHit(true);
-        playerLasers[i].setX(-500);
+        playerLasers[i].clear();
 
         score += 100;
         enemies[j].clear();
@@ -491,8 +502,7 @@ let laserHitCheck = function() {
   for (let i = 0; i < enemyLasers.length; i++) {
     if (enemyLasers[i].getX() >= player.getX() && enemyLasers[i].getX() + enemyLasers[i].getWidth() <= player.getX() + player.getWidth() &&
       enemyLasers[i].getY() >= player.getY() && enemyLasers[i].getY() + enemyLasers[i].getHeight() <= player.getY() + player.getHeight()) {
-        enemyLasers[i].setHit(true);
-        enemyLasers[i].setX(-500);
+        enemyLasers[i].clear();
 
         score -= 1100;
         player.loseLife();
