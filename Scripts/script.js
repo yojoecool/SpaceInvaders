@@ -414,6 +414,7 @@ levels.push(level3);
 
 let init = function() {
   levels[0]();
+  level = 1;
   score = 0;
   player = new Player((canvas.width / 2) - 25, 10, 55, 40, spriteSheet, 150, 637, 73, 53);
 }
@@ -473,6 +474,12 @@ let drawStart = function() {
   else flash = true;
 }
 
+let drawRestart = function() {
+  context.font = "15px 'Press Start 2P', cursive";
+  context.fillStyle = "white";
+  context.fillText("Press Enter to restart game", canvas.width / 2 - 200, canvas.height / 2 + 100);
+}
+
 let life = new Image();
 life.src = spriteSheet;
 let drawLives = function() {
@@ -508,6 +515,7 @@ let youWin = function() {
   context.font = "40px 'Press Start 2P', cursive";
   context.fillStyle = "white";
   context.fillText("You Win!!!", canvas.width / 2 - 190, canvas.height / 2);
+  drawRestart();
 }
 
 let checkGameOver = function() {
@@ -515,6 +523,7 @@ let checkGameOver = function() {
     context.font = "40px 'Press Start 2P', cursive";
     context.fillStyle = "white";
     context.fillText("Game Over", canvas.width / 2 - 175, canvas.height / 2);
+    drawRestart();
   }
 }
 
@@ -573,11 +582,17 @@ document.addEventListener("keypress", (event) => {
     player.addLaser();
     spaceDown = true;
   }
-  else if (event.keyCode === 13 && !gameStart) {
-    clearInterval(preStart);
-    init();
-    gameLoop();
-    gameStart = true;
+  else if (event.keyCode === 13) {
+    if (!gameStart) {
+      clearInterval(preStart);
+      init();
+      gameLoop();
+      gameStart = true;
+    }
+    else if (gameOver || level >= levels.length) {
+      gameOver = false;
+      init();
+    }
   }
 });
 
