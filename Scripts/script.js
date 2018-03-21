@@ -66,13 +66,35 @@ let enemySprites = [
   },
 ];
 
+let explosion = new Audio("sounds/explosion.wav");
+let invaderKilled = new Audio("sounds/invaderkilled.wav");
+let shoot = new Audio("sounds/shoot.wav");
+let enemySounds = [
+  new Audio("sounds/fastinvader4.wav"),
+  new Audio("sounds/fastinvader2.wav"),
+  new Audio("sounds/fastinvader3.wav"),
+  new Audio("sounds/fastinvader1.wav")
+];
+let winMusic = new Audio("sounds/song1.mp3");
+winMusic.loop = true;
+
+let audioTick = 0;
+let enemyAudioTrack = 0;
 let activeKey = 0;
 let gameOver = false;
+let gameWon = false;
 let moveDownNextTick = false;
 let gameStart = false;
 let score = 0;
 let numOfEnemies = 0;
 let level = 1;
+let nextLevelDelay = 0;
+
+let playSounds = function(sound) {
+  sound.pause();
+  sound.currentTime = 0;
+  sound.play();
+}
 
 let drawBackground = function() {
   context.beginPath();
@@ -267,9 +289,19 @@ class Player extends Character {
     this.animate = false;
   }
 
+  addLaser() {
+    let laserCount = this.lasers.length;
+    super.addLaser();
+
+    if (this.lasers.length > laserCount) {
+      playSounds(shoot);
+    }
+  }
+
   loseLife() {
     console.log("You've been hit!");
     this.lives--;
+    playSounds(explosion);
     if (this.lives === 0) {
       console.log(ded);
       gameOver = true;
@@ -329,6 +361,7 @@ class Enemy extends Character {
       this.x = -500;
       this.y = -500;
       numOfEnemies--;
+      playSounds(invaderKilled);
     }
   }
 
@@ -370,6 +403,7 @@ class Enemy extends Character {
       if (this.y > canvas.height - (this.height * 2)) {
         gameOver = true;
         player.setLives(0);
+        playSounds(explosion);
         console.log(ded);
       }
 
@@ -418,15 +452,19 @@ let level3 = function() {
   createEnemies(speed);
 }
 
-levels.push(level1);
-levels.push(level2);
-levels.push(level3);
+// levels.push(level1);
+// levels.push(level2);
+// levels.push(level3);
 
 let init = function() {
-  levels[0]();
+  // levels[0]();
   level = 1;
   score = 0;
+  audioTick = 0;
   player = new Player((canvas.width / 2) - 25, 10, 55, 40, spriteSheet, 150, 637, 73, 53);
+
+  // winMusic.pause();
+  // winMusic.currentTime = 0;
 }
 
 let laserHitCheck = function() {
@@ -528,6 +566,9 @@ let youWin = function() {
   context.fillStyle = "white";
   context.fillText("You Win!!!", canvas.width / 2 - 190, canvas.height / 2);
   drawRestart();
+
+  gameWon = true;
+  // playSounds(winMusic);
 }
 
 let checkGameOver = function() {
@@ -539,7 +580,6 @@ let checkGameOver = function() {
   }
 }
 
-let nextLevelDelay = 0;
 let endOfLevelCheck = function() {
   if (numOfEnemies === 0) {
     if (level < levels.length) {
@@ -547,6 +587,7 @@ let endOfLevelCheck = function() {
       if (nextLevelDelay === 250) {
         level++;
         nextLevelDelay = 0;
+        audioTick = 0;
         levels[level - 1]();
       }
       else drawNextLevel();
@@ -555,6 +596,18 @@ let endOfLevelCheck = function() {
       youWin();
     }
   }
+}
+
+let playEnemyMovement = function() {
+  let maxTick = 25 + Math.floor(50 / level);
+  let gameCondition = gameStart && !gameOver && !gameWon && nextLevelDelay === 0;
+  if (audioTick === maxTick && gameCondition) {
+    playSounds(enemySounds[enemyAudioTrack]);
+    enemyAudioTrack = (enemyAudioTrack + 1) % 4;
+    audioTick = 0;
+  }
+  else if (gameCondition) audioTick++;
+  else enemyAudioTrack = 0;
 }
 
 let gameLoop = function() {
@@ -570,6 +623,7 @@ let gameLoop = function() {
   drawLives();
   endOfLevelCheck();
   checkGameOver();
+  playEnemyMovement();
 }
 
 
@@ -603,6 +657,7 @@ document.addEventListener("keypress", (event) => {
     }
     else if (gameOver || level >= levels.length) {
       gameOver = false;
+      gameWon = false;
       init();
     }
   }
