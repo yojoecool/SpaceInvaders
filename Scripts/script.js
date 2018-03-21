@@ -77,8 +77,7 @@ let enemySounds = [
   new Audio("sounds/fastinvader3.wav"),
   new Audio("sounds/fastinvader1.wav")
 ];
-let winMusic = new Audio("sounds/song1.mp3");
-winMusic.loop = true;
+let invaderHit = new Audio("sounds/invaderhit3.wav");
 
 let audioTick = 0;
 let enemyAudioTrack = 0;
@@ -426,6 +425,7 @@ class Enemy extends Character {
         this.lasers[i].clear();
       }
     }
+    else playSounds(invaderHit);
   }
 
   //update enemies each tick
@@ -539,9 +539,6 @@ let init = function() {
   let playerWidth = canvas.width / 16;
   let playerHeight = canvas.height / 18;
   player = new Player((canvas.width / 2) - 25, 10, playerWidth, playerHeight, spriteSheet, 150, 637, 73, 53);
-
-  // winMusic.pause();
-  // winMusic.currentTime = 0;
 }
 
 // check collisions
@@ -662,7 +659,6 @@ let youWin = function() {
   drawRestart();
 
   gameWon = true;
-  // playSounds(winMusic);
 }
 
 //draw the text indicating that the user has won
