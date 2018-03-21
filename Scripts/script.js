@@ -295,7 +295,7 @@ class Player extends Character {
     let color = colorArray[Math.floor(Math.random() * colorArray.length)];
     let y = canvas.height - height;
 
-    super(x, y, dx, 0, width, height, color, 2, false, 8, imgSrc, srcX, srcY, srcWidth, srcHeight);
+    super(x, y, dx, 0, width, height, color, 2, false, 9, imgSrc, srcX, srcY, srcWidth, srcHeight);
 
     this.lives = 5;
   }
@@ -460,8 +460,8 @@ let createEnemies = function(speed) {
   for (let i = 0; i < 5; i++) {
     for (let j = 0; j < 5; j++) {
       let enemyType = j % 3;
-      let fireRate = Math.floor(Math.random() * 1000) + 150;
-      let x = i * (2 * enemyWidth);
+      let fireRate = Math.floor(Math.random() * 1000) + 200;
+      let x = i * (2 * enemyWidth * 1.15);
       let y = j * (1.5 * enemyHeight) + 55;
 
       enemies.push(new Enemy(x, y, speed, 23, enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
@@ -557,10 +557,16 @@ var flash = false;
 let drawStart = function() {
   drawBackground();
   if (flash) {
-    context.font = "25px 'Press Start 2P', cursive";
-    context.fillStyle = "white";
     let text = "Press Enter";
-    if (window.screen.width >= 1000) text += " To Start";
+    let fontSize = "25px"
+    if (window.screen.width >= 1000) {
+      text += " To Start";
+    }
+    if (window.screen.width >= 1400) {
+      fontSize = "35px";
+    }
+    context.font = `${fontSize} 'Press Start 2P', cursive`;
+    context.fillStyle = "white";
     context.fillText(text, canvas.width / 10, canvas.height / 2);
     flash = false;
   }
