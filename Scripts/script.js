@@ -243,7 +243,7 @@ class Player extends Character {
     let color = colorArray[Math.floor(Math.random() * colorArray.length)];
     let y = canvas.height - height;
 
-    super(x, y, dx, 0, width, height, color, 3, false, 12, imgSrc, srcX, srcY, srcWidth, srcHeight);
+    super(x, y, dx, 0, width, height, color, 2, false, 12, imgSrc, srcX, srcY, srcWidth, srcHeight);
 
     this.animate = false;
     this.lives = 5;
@@ -392,19 +392,19 @@ let createEnemies = function(speed) {
 
 let level1 = function() {
   level = 1;
-  let speed = 1;
+  let speed = 2;
   createEnemies(speed);
 }
 
 let level2 = function() {
   level = 2;
-  let speed = 2;
+  let speed = 3;
   createEnemies(speed);
 }
 
 let level3 = function() {
   level = 3;
-  let speed = 3;
+  let speed = 4;
   createEnemies(speed);
 }
 
@@ -445,6 +445,7 @@ let laserHitCheck = function() {
         enemyLasers[i].setHit(true);
         enemyLasers[i].setX(-500);
 
+        score -= 1100;
         player.loseLife();
     }
   }
@@ -520,7 +521,7 @@ let checkGameOver = function() {
 let nextLevelDelay = 0;
 let endOfLevelCheck = function() {
   if (numOfEnemies === 0) {
-    if (level + 1 < levels.length) {
+    if (level < levels.length) {
       nextLevelDelay++;
       if (nextLevelDelay === 250) {
         level++;
