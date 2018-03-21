@@ -1,6 +1,16 @@
 console.log("script loaded");
 
 let canvas = document.querySelector("#game-canvas");
+
+let sizeScreen = function() {
+  if (window.screen.width >= 925) {
+    canvas.width = window.screen.width * 0.6;
+    canvas.height = window.screen.height * (2 / 3);
+  }
+}
+
+sizeScreen();
+
 let context = canvas.getContext("2d");
 
 let spriteSheet = "Images/invaders.gif";
@@ -466,9 +476,11 @@ var flash = true;
 let drawStart = function() {
   drawBackground();
   if (flash) {
-    context.font = "30px 'Press Start 2P', cursive";
+    context.font = "25px 'Press Start 2P', cursive";
     context.fillStyle = "white";
-    context.fillText("Press Enter To Start", 95, canvas.height / 2);
+    let text = "Press Enter";
+    if (window.screen.width >= 1000) text += " To Start";
+    context.fillText(text, canvas.width / 10, canvas.height / 2);
     flash = false;
   }
   else flash = true;

@@ -7,8 +7,15 @@ let backgroundContext = backgroundCanvas.getContext("2d");
 let drawText = function() {
   backgroundContext.font = "30px 'Press Start 2P', cursive";
   backgroundContext.fillStyle = "white";
-  backgroundContext.fillText("SPACE", backgroundCanvas.width - 235, backgroundCanvas.height / 2 - 25);
-  backgroundContext.fillText("INVADERS", backgroundCanvas.width - 280, backgroundCanvas.height / 2 + 25);
+
+  if (window.screen.width >= 1200) {
+    backgroundContext.fillText("SPACE", backgroundCanvas.width - 225, backgroundCanvas.height / 2 - 25);
+    backgroundContext.fillText("INVADERS", backgroundCanvas.width - 270, backgroundCanvas.height / 2 + 25);
+  }
+  else {
+    backgroundContext.fillText("SPACE", backgroundCanvas.width / 2 - 60, backgroundCanvas.height - 80);
+    backgroundContext.fillText("INVADERS", backgroundCanvas.width / 2 - 105, backgroundCanvas.height - 30);
+  }
 }
 
 class Star {
@@ -92,4 +99,5 @@ window.addEventListener("resize", (event) => {
   backgroundCanvas.height = window.innerHeight;
   createStars();
   drawPageBackground();
+  sizeScreen();
 });
