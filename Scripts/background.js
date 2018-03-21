@@ -75,8 +75,8 @@ let drawPageBackground = function() {
   backgroundContext.fillStyle = "black";
   backgroundContext.fill();
 
-  drawText();
   drawStars();
+  drawText();
 }
 
 let backgroundLoop = function() {
