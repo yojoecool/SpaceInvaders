@@ -347,7 +347,7 @@ class Enemy extends Character {
     let srcWidth = spriteInfo.width;
     let srcHeight = spriteInfo.height;
 
-    super(x, y, dx, dy, width, height, color, 4, true, 8, imgSrc, srcX, srcY, srcWidth, srcHeight);
+    super(x, y, dx, dy, width, height, color, 4, true, 7, imgSrc, srcX, srcY, srcWidth, srcHeight);
 
     this.enemyType = enemyType;
     //number of frames between shots
@@ -499,7 +499,10 @@ let init = function() {
   level = 1;
   score = 0;
   audioTick = 0;
-  player = new Player((canvas.width / 2) - 25, 10, 55, 40, spriteSheet, 150, 637, 73, 53);
+
+  let playerWidth = canvas.width / 16;
+  let playerHeight = canvas.height / 18;
+  player = new Player((canvas.width / 2) - 25, 10, playerWidth, playerHeight, spriteSheet, 150, 637, 73, 53);
 
   // winMusic.pause();
   // winMusic.currentTime = 0;
