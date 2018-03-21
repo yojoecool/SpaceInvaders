@@ -8,12 +8,12 @@ let backgroundContext = backgroundCanvas.getContext("2d");
 
 //draw "Space Invaders" text. to be slightly responsive, move the text to a different location depending on screen size
 let drawText = function() {
-  backgroundContext.font = "30px 'Press Start 2P', cursive";
+  backgroundContext.font = "25px 'Press Start 2P', cursive";
   backgroundContext.fillStyle = "white";
 
   if (window.screen.width >= 1200) {
-    backgroundContext.fillText("SPACE", backgroundCanvas.width - 225, backgroundCanvas.height / 2 - 25);
-    backgroundContext.fillText("INVADERS", backgroundCanvas.width - 270, backgroundCanvas.height / 2 + 25);
+    backgroundContext.fillText("SPACE", backgroundCanvas.width - 210, backgroundCanvas.height / 2 - 20);
+    backgroundContext.fillText("INVADERS", backgroundCanvas.width - 247, backgroundCanvas.height / 2 + 20);
   }
   else {
     backgroundContext.fillText("SPACE", backgroundCanvas.width / 2 - 60, backgroundCanvas.height - 80);

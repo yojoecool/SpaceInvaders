@@ -450,8 +450,8 @@ class Enemy extends Character {
 let player;
 let enemies = [];
 let levels = [];
-let enemyWidth = 38;
-let enemyHeight = 32;
+let enemyWidth = canvas.width / 22;
+let enemyHeight = canvas.height / 20;
 
 // Creates enemies for each level
 let createEnemies = function(speed) {
@@ -464,7 +464,7 @@ let createEnemies = function(speed) {
       let x = i * (2 * enemyWidth * 1.15);
       let y = j * (1.5 * enemyHeight) + 55;
 
-      enemies.push(new Enemy(x, y, speed, 23, enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
+      enemies.push(new Enemy(x, y, speed, enemyHeight * (2/3), enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
       numOfEnemies++;
     }
   }
