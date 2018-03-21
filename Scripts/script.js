@@ -452,12 +452,12 @@ let level3 = function() {
   createEnemies(speed);
 }
 
-// levels.push(level1);
-// levels.push(level2);
-// levels.push(level3);
+levels.push(level1);
+levels.push(level2);
+levels.push(level3);
 
 let init = function() {
-  // levels[0]();
+  levels[0]();
   level = 1;
   score = 0;
   audioTick = 0;
