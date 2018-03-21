@@ -1,5 +1,7 @@
 # Space Invaders
 
+![Logo](https://i.ytimg.com/vi/k9oyDTR0EwQ/maxresdefault.jpg "Space Invaders")
+
 ## Rules of the Game
 Space Invaders is the classic single-player arcade game introduced in 1978. The objective of my version is to make it through 3 levels of increasing difficulty while avoiding getting hit by enemy bullets and preventing the enemies from reaching the bottom of the screen. Difficulty between levels increases by having enemies become faster and take more hits in order to die.
 
@@ -17,7 +19,7 @@ To help with the creation of the objects needed for the game, I used classes fro
 After finishing the basics of the game that followed the user stories, I created a list of features that I thought would make the game more interesting and more fleshed out, such as a score counter, multiple lives, difficulty adjustments, sprites and animations, background animations, sound effects, and more.
 
 ## Wireframe
-![wireframe](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+![wireframeImg](https://github.com/yojoecool/SpaceInvaders/blob/master/docs/wireframe.png "Wireframe")
 
 ## Biggest challenges and wins
 The biggest challenge was probably learning Canvas in the first place since I had never used anything like that before. Along with learning Canvas, making sure I kept my scope realistic and avoiding feature creep given the limited time to work on the project was also a challenge. 
