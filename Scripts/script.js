@@ -2,6 +2,7 @@ console.log("script loaded");
 
 let canvas = document.querySelector("#game-canvas");
 
+// resize canvas based on window size
 let sizeScreen = function() {
   if (window.screen.width >= 925) {
     canvas.width = window.screen.width * 0.6;
@@ -11,6 +12,7 @@ let sizeScreen = function() {
 
 sizeScreen();
 
+/* Global Variables */
 let context = canvas.getContext("2d");
 
 let spriteSheet = "Images/invaders.gif";
@@ -43,17 +45,6 @@ let enemySprites = [
     hits: 1
   },
   {
-    char: "MedInv",
-    x1: 19,
-    y1: 14,
-    x2: 165,
-    y2: 14,
-    height: 80,
-    width: 110,
-    animate: 70,
-    hits: 2
-  },
-  {
     char: "LarInv",
     x1: 19,
     y1: 134,
@@ -63,6 +54,17 @@ let enemySprites = [
     width: 120,
     animate: 100,
     hits: 3
+  },
+  {
+    char: "MedInv",
+    x1: 19,
+    y1: 14,
+    x2: 165,
+    y2: 14,
+    height: 80,
+    width: 110,
+    animate: 70,
+    hits: 2
   },
 ];
 
@@ -90,6 +92,7 @@ let numOfEnemies = 0;
 let level = 1;
 let nextLevelDelay = 0;
 
+/* Base Functions (not used for game loop) */
 let playSounds = function(sound) {
   if (sound.currentTime > 0) {
     sound.pause();
@@ -105,6 +108,7 @@ let drawBackground = function() {
   context.fill();
 }
 
+/* Classes */
 class GamePiece {
   constructor(x, y, dx, dy, width, height, color) {
     this.x = x;
@@ -157,6 +161,7 @@ class GamePiece {
   }
 
   draw() {
+    // be default, draw a rectangle
     context.fillStyle = this.color;
     context.beginPath();
     context.fillRect(this.x, this.y, this.height, this.width);
@@ -168,10 +173,12 @@ class Character extends GamePiece {
   constructor(x, y, dx, dy, width, height, color, laserTotal, enemy, bulletSpeed, imgSrc = "", srcX = 0, srcY = 0, srcWidth = 0, srcHeight = 0) {
     super(x, y, dx, dy, width, height, color);
 
+    // limit the number of shots a character can have on the screen
     this.laserTotal = laserTotal;
     this.lasers = [];
     this.enemy = enemy;
     this.bulletSpeed = bulletSpeed;
+    //default sprite to null. if an image source is passed in, set sprite to the image
     this.sprite = null;
     if (imgSrc != "") {
       this.sprite = new Image();
@@ -212,11 +219,13 @@ class Character extends GamePiece {
     this.lives = lives;
   }
 
+  //add laser to the character's laser array if the number of lasers on screen are less than the max number of lasers
   addLaser() {
     if (this.lasers.length < this.laserTotal)
-      this.lasers.push(new Laser(Math.floor(this.x + this.width / 2) - 5, this.y, this.bulletSpeed, 10, 10, this.enemy));
+      this.lasers.push(new Laser(Math.floor(this.x + this.width / 2) - 3, this.y, this.bulletSpeed, 6, 6, this.enemy));
   }
 
+  //remove lasers from the characther's laser array as they disappear from the screen
   removeLasers() {
     let removeLasers = [];
     let lasersToRemove = 0;
@@ -235,6 +244,7 @@ class Character extends GamePiece {
     }
   }
 
+  //if an image for the sprite hasn't been passed in, draw a rectangle. otherwise, draw the sprite
   draw() {
     if (this.sprite === null) {
       super.draw();
@@ -260,12 +270,14 @@ class Laser extends GamePiece {
     this.hit = hit;
   }
 
+  //removes the laser from play
   clear() {
     this.x = -500;
     this.y = -500;
     this.hit = true;
   }
 
+  //updates the laser's location
   update() {
       if (!this.enemyLaser) {
         if (this.y > 0)
@@ -283,20 +295,12 @@ class Player extends Character {
     let color = colorArray[Math.floor(Math.random() * colorArray.length)];
     let y = canvas.height - height;
 
-    super(x, y, dx, 0, width, height, color, 2, false, 12, imgSrc, srcX, srcY, srcWidth, srcHeight);
+    super(x, y, dx, 0, width, height, color, 2, false, 8, imgSrc, srcX, srcY, srcWidth, srcHeight);
 
-    this.animate = false;
     this.lives = 5;
   }
 
-  animateOn() {
-    this.animate = true;
-  }
-
-  animateOff() {
-    this.animate = false;
-  }
-
+  // add laser and player sound effect
   addLaser() {
     let laserCount = this.lasers.length;
     super.addLaser();
@@ -306,6 +310,7 @@ class Player extends Character {
     }
   }
 
+  // remove life from player
   loseLife() {
     console.log("You've been hit!");
     this.lives--;
@@ -316,16 +321,16 @@ class Player extends Character {
     }
   }
 
+  //update location of player based on which arrow button is pressed. prevent movement that would be out of bounds
   update(keycode) {
     if (!gameOver) {
-      if (this.animate) {
-        if (keycode === 39 && this.x + this.width + this.dx <= canvas.width)
-          this.x += this.dx;
-        else if (keycode === 37 && this.x - this.dx >= 0)
-          this.x -= this.dx;
-      }
+      if (keycode === 39 && this.x + this.width + this.dx <= canvas.width)
+        this.x += this.dx;
+      else if (keycode === 37 && this.x - this.dx >= 0)
+        this.x -= this.dx;
       this.draw();
 
+      // check if any lasers need to be removed and remove them if necessary
       this.removeLasers();
     }
   }
@@ -334,24 +339,33 @@ class Player extends Character {
 class Enemy extends Character {
   constructor(x, y, dx, dy, width, height, shotFreq, imgSrc = "", enemyType = 0) {
     let color = colorArray[Math.floor(Math.random() * colorArray.length)];
-    let spriteInfo = enemySprites[enemyType];
 
+    // get sprite info based on what type of enemy it is
+    let spriteInfo = enemySprites[enemyType];
     let srcX = spriteInfo.x1;
     let srcY = spriteInfo.y1;
     let srcWidth = spriteInfo.width;
     let srcHeight = spriteInfo.height;
 
-    super(x, y, dx, dy, width, height, color, 4, true, 7, imgSrc, srcX, srcY, srcWidth, srcHeight);
+    super(x, y, dx, dy, width, height, color, 4, true, 8, imgSrc, srcX, srcY, srcWidth, srcHeight);
 
     this.enemyType = enemyType;
+    //number of frames between shots
     this.shotFrame = 0;
-    this.hit = false;
     this.shotFreq = shotFreq;
+
+    this.hit = false;
+    //number of frames between animations
     this.animationFrame = 0;
     this.animationFreq = enemySprites[enemyType].animate;
+    //decides which frame to animate to
     this.firstAniFrame = true;
     this.spriteInfo = spriteInfo;
-    this.lives = enemyType + 1 > level ? level : enemyType + 1;
+
+    //nunber of lives is based on enemy type and what level it is.
+    //if the enemy type is greater than the level, the max lives is the level count
+    //if the enemy type is less than or equal to the level, then lives are set to the enemy type
+    this.lives = spriteInfo.hits > level ? level : spriteInfo.hits;
   }
 
   setHit(hit) {
@@ -362,6 +376,7 @@ class Enemy extends Character {
     return this.enemyType;
   }
 
+  //if an ememy is hit, it loses a life. if it runs out of lives, it and its lasers are removed from the screen
   clear() {
     this.lives--;
     if (this.lives === 0) {
@@ -377,20 +392,24 @@ class Enemy extends Character {
     }
   }
 
+  //update enemies each tick
   update() {
     if (!gameOver && !this.hit) {
       this.x += this.dx;
 
+      //if an edge is hit, moveDownNextTick lets all enemies know to move down a level
       if ((this.x + this.width >= canvas.width || this.x <= 0)) {
         moveDownNextTick = true;
       }
 
+      //when the number of frames to shoot is met, add a laser to the enemy's array
       this.shotFrame++;
       if (this.shotFrame === this.shotFreq) {
         this.shotFrame = 0;
         this.addLaser();
       }
 
+      //get the next necessary frame for animation if the number of frames necessary is met
       this.animationFrame++;
       if (this.animationFrame === this.animationFreq) {
         this.srcWidth = this.spriteInfo.width;
@@ -410,33 +429,38 @@ class Enemy extends Character {
         this.animationFrame = 0
       }
 
+      //check if any lasers need to be removed
       this.removeLasers();
 
-      if (this.y > canvas.height - (this.height * 2)) {
+      //if the enemy reaches the bottom of the screen, it's an automatic game over
+      if (this.y + this.height > canvas.height - (player.getHeight())) {
         gameOver = true;
         player.setLives(0);
         playSounds(explosion);
         console.log(ded);
       }
 
+      //draw the new image
       this.draw();
     }
   }
 }
 
+/* Game logic */
 let player;
 let enemies = [];
 let levels = [];
 let enemyWidth = 38;
 let enemyHeight = 32;
 
+// Creates enemies for each level
 let createEnemies = function(speed) {
   numOfEnemies = 0;
   enemies = [];
   for (let i = 0; i < 5; i++) {
     for (let j = 0; j < 5; j++) {
       let enemyType = j % 3;
-      let fireRate = Math.floor(Math.random() * 1000) + 250;
+      let fireRate = Math.floor(Math.random() * 1000) + 150;
       let x = i * (2 * enemyWidth);
       let y = j * (1.5 * enemyHeight) + 55;
 
@@ -446,6 +470,7 @@ let createEnemies = function(speed) {
   }
 }
 
+// levels differ by the speed of the enemies and the number of lives of some enemies
 let level1 = function() {
   level = 1;
   let speed = 2;
@@ -468,6 +493,7 @@ levels.push(level1);
 levels.push(level2);
 levels.push(level3);
 
+// initialize the start of the game
 let init = function() {
   levels[0]();
   level = 1;
@@ -479,14 +505,17 @@ let init = function() {
   // winMusic.currentTime = 0;
 }
 
+// check collisions
 let laserHitCheck = function() {
   let playerLasers = player.getLasers();
   let enemyLasers = [];
 
+  // get all of the enemies' lasers
   for (let i = 0; i < enemies.length; i++) {
     enemyLasers = enemyLasers.concat(enemies[i].getLasers());
   }
 
+  //check if player hit an enemy
   for (let i = 0; i < playerLasers.length; i++) {
     for (let j = 0; j < enemies.length; j++) {
       if (playerLasers[i].getX() >= enemies[j].getX() && playerLasers[i].getX() + playerLasers[i].getWidth() <= enemies[j].getX() + enemies[j].getWidth() &&
@@ -499,6 +528,7 @@ let laserHitCheck = function() {
     }
   }
 
+  //check if enemy hit the player
   for (let i = 0; i < enemyLasers.length; i++) {
     if (enemyLasers[i].getX() >= player.getX() && enemyLasers[i].getX() + enemyLasers[i].getWidth() <= player.getX() + player.getWidth() &&
       enemyLasers[i].getY() >= player.getY() && enemyLasers[i].getY() + enemyLasers[i].getHeight() <= player.getY() + player.getHeight()) {
@@ -510,6 +540,7 @@ let laserHitCheck = function() {
   }
 }
 
+//if an edge has been hit, all eneies will be moved down when they update this tick
 function moveAllEnemiesDownCheck() {
   if (moveDownNextTick) {
     for (let i = 0; i < enemies.length; i++) {
@@ -520,7 +551,9 @@ function moveAllEnemiesDownCheck() {
   }
 }
 
-var flash = true;
+//draw the "Press Enter To Start" screen when the user navigates to the screen
+//the text appears when "flash" is true
+var flash = false;
 let drawStart = function() {
   drawBackground();
   if (flash) {
@@ -534,12 +567,14 @@ let drawStart = function() {
   else flash = true;
 }
 
+//draw prompt to restart game
 let drawRestart = function() {
   context.font = "15px 'Press Start 2P', cursive";
   context.fillStyle = "white";
   context.fillText("Press Enter to restart game", canvas.width / 2 - 200, canvas.height / 2 + 100);
 }
 
+//draw the number of lives at the top of the screen along with the line separating the top portion from the game
 let life = new Image();
 life.src = spriteSheet;
 let drawLives = function() {
@@ -558,12 +593,14 @@ let drawLives = function() {
   }
 }
 
+//draw the user's score
 let drawScore = function() {
   context.font = "15px 'Press Start 2P', cursive";
   context.fillStyle = "white";
   context.fillText(`Score: ${score}`, 30, 30);
 }
 
+//draw the text to indicate the user has made it to the next level
 let drawNextLevel = function() {
   let levelDisplayed = level + 1;
   context.font = "30px 'Press Start 2P', cursive";
@@ -571,6 +608,7 @@ let drawNextLevel = function() {
   context.fillText(`Level ${levelDisplayed}`, canvas.width / 2 - 110, canvas.height / 2);
 }
 
+//draw the text indicating that the user has won
 let youWin = function() {
   context.font = "40px 'Press Start 2P', cursive";
   context.fillStyle = "white";
@@ -581,6 +619,7 @@ let youWin = function() {
   // playSounds(winMusic);
 }
 
+//if gameOver has been set to true, display the game over screen
 let checkGameOver = function() {
   if (gameOver) {
     context.font = "40px 'Press Start 2P', cursive";
@@ -590,9 +629,12 @@ let checkGameOver = function() {
   }
 }
 
+//check if all enemies have been defeated. If they have, check if all levels have been beaten
+//if all levels have been beaten, display "you win" text. otherwise, display "next level" text and reset necessary variables
 let endOfLevelCheck = function() {
   if (numOfEnemies === 0) {
     if (level < levels.length) {
+      //nextLevelDelay is used to keep track of the number of ticks between the end of one level and start of the next
       nextLevelDelay++;
       if (nextLevelDelay === 250) {
         level++;
@@ -608,8 +650,12 @@ let endOfLevelCheck = function() {
   }
 }
 
-let playEnemyMovement = function() {
-  let maxTick = 25 + Math.floor(50 / level);
+//function to play enemy sounds while they move
+let playEnemyMovementSounds = function() {
+  // ticks between sounds decreases by the level
+  let maxTick = 15 + Math.floor(50 / level);
+
+  //only play sound or increment the tick count between plays if this condition is met
   let gameCondition = gameStart && !gameOver && !gameWon && nextLevelDelay === 0;
   if (audioTick === maxTick && gameCondition) {
     playSounds(enemySounds[enemyAudioTrack]);
@@ -620,37 +666,40 @@ let playEnemyMovement = function() {
   else enemyAudioTrack = 0;
 }
 
+//funtion that's run to play game
+//updates all of the necessary components to keep game running
 let gameLoop = function() {
   requestAnimationFrame(gameLoop);
   drawBackground();
-  player.update(activeKey);
-  moveAllEnemiesDownCheck();
-  for (let i = 0; i < enemies.length; i++) {
-    enemies[i].update();
+  if (!gameWon && !gameOver) {
+    player.update(activeKey);
+    moveAllEnemiesDownCheck();
+    for (let i = 0; i < enemies.length; i++) {
+      enemies[i].update();
+    }
+    laserHitCheck();
   }
-  laserHitCheck();
   drawScore();
   drawLives();
   endOfLevelCheck();
   checkGameOver();
-  playEnemyMovement();
+  playEnemyMovementSounds();
 }
 
 
-// Before starting game
+/* Runs before game begins to execute */
 drawStart();
-var preStart = setInterval(drawStart, 400);
+//Sets an interval to run the drawStart function
+var presStart = setInterval(drawStart, 400);
 
 
-// Listener Events
-let arrowKeyDown = false;
+/* Event Listeners */
+//spaceDown is used to ensure that the keypress event doesn't cause the function that runs when the sapce bar is pressed to be called multiple times
 let spaceDown = false;
-document.addEventListener("keydown", (event) => {
-  if (arrowKeyDown) return;
-  arrowKeyDown = true;
 
+//sets what key is currently being pressed down (used in player's update function)
+document.addEventListener("keydown", (event) => {
   activeKey = event.keyCode;
-  if (player != undefined) player.animateOn();
 });
 
 document.addEventListener("keypress", (event) => {
@@ -658,14 +707,16 @@ document.addEventListener("keypress", (event) => {
     player.addLaser();
     spaceDown = true;
   }
+  //press enter either before the game starts or if the game has ended
   else if (event.keyCode === 13) {
+    // if game hasn't started, initialize and begin the game loop
     if (!gameStart) {
-      clearInterval(preStart);
+      clearInterval(presStart);
       init();
       gameLoop();
       gameStart = true;
     }
-    else if (gameOver || level >= levels.length) {
+    else if (gameOver || gameWon) {
       gameOver = false;
       gameWon = false;
       init();
@@ -673,9 +724,8 @@ document.addEventListener("keypress", (event) => {
   }
 });
 
+//removes active key so that the player doesn't keep moving after the arrow keys have been released
 document.addEventListener("keyup", (event) => {
   activeKey = -1;
-  if (player != undefined) player.animateOff();
-  arrowKeyDown = false;
   if (event.keyCode === 32) spaceDown = false;
 });

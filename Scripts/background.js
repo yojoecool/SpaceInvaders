@@ -1,9 +1,12 @@
 var backgroundCanvas = document.querySelector("#background-canvas");
+
+//make sure canvas is the size of the screen
 backgroundCanvas.width = window.innerWidth;
 backgroundCanvas.height = window.innerHeight;
 
 let backgroundContext = backgroundCanvas.getContext("2d");
 
+//draw "Space Invaders" text. to be slightly responsive, move the text to a different location depending on screen size
 let drawText = function() {
   backgroundContext.font = "30px 'Press Start 2P', cursive";
   backgroundContext.fillStyle = "white";
@@ -18,6 +21,7 @@ let drawText = function() {
   }
 }
 
+/* Classes */
 class Star {
   constructor(x, y, dx, dy, radius) {
     this.x = x;
@@ -29,6 +33,7 @@ class Star {
     this.radius = radius;
   }
 
+  //draw star
   draw() {
     backgroundContext.beginPath();
     backgroundContext.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
@@ -36,6 +41,7 @@ class Star {
     backgroundContext.fill();
   }
 
+  //update star's location
   update() {
     this.x += this.dx;
     this.y += this.dy;
@@ -49,6 +55,8 @@ class Star {
   }
 }
 
+/* Animation logic */
+//create all of the stars that will be displayed
 let stars = [];
 let createStars = function() {
   stars = [];
@@ -70,12 +78,14 @@ let createStars = function() {
   }
 }
 
+// update all of the stars
 let drawStars = function() {
   for (let i = 0; i < stars.length; i++) {
     stars[i].update();
   }
 }
 
+//create background for page
 let drawPageBackground = function() {
   backgroundContext.beginPath();
   backgroundContext.rect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
@@ -86,14 +96,18 @@ let drawPageBackground = function() {
   drawText();
 }
 
+//animation loop
 let backgroundLoop = function() {
   requestAnimationFrame(backgroundLoop);
   drawPageBackground();
 }
 
+/* Begin Animations */
 createStars();
 backgroundLoop();
 
+/* Event Listeners */
+//redraw everything when the screen is resized
 window.addEventListener("resize", (event) => {
   backgroundCanvas.width = window.innerWidth;
   backgroundCanvas.height = window.innerHeight;
