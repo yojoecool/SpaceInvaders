@@ -273,7 +273,6 @@ class Laser extends GamePiece {
   //removes the laser from play
   clear() {
     this.x = -500;
-    this.y = -500;
     this.hit = true;
   }
 
