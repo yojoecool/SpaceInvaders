@@ -113,5 +113,4 @@ window.addEventListener("resize", (event) => {
   backgroundCanvas.height = window.innerHeight;
   createStars();
   drawPageBackground();
-  sizeScreen();
 });

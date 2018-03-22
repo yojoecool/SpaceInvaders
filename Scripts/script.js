@@ -2,16 +2,6 @@ console.log("script loaded");
 
 let canvas = document.querySelector("#game-canvas");
 
-// resize canvas based on window size
-let sizeScreen = function() {
-  if (window.innerWidth >= 925) {
-    canvas.width = window.innerWidth * 0.6;
-    canvas.height = window.innerHeight * (2 / 3);
-  }
-}
-
-sizeScreen();
-
 /* Global Variables */
 let context = canvas.getContext("2d");
 
@@ -516,8 +506,8 @@ class Enemy extends Character {
 let player;
 let enemies = [];
 let levels = [];
-let enemyWidth = canvas.width / 22;
-let enemyHeight = canvas.height / 19;
+let enemyWidth = canvas.width / 19;
+let enemyHeight = canvas.height / 20;
 
 // Creates enemies for each level
 let createEnemies = function(speed) {
@@ -625,14 +615,14 @@ var flash = false;
 let drawStart = function() {
   drawBackground();
   if (flash) {
-    let text = "Press Enter";
-    let fontSize = "25px"
-    if (window.innerWidth >= 1000) {
-      text += " To Start";
-    }
-    if (window.innerWidth >= 1400) {
-      fontSize = "35px";
-    }
+    let text = "Press Enter To Start";
+    let fontSize = "28px"
+    // if (window.innerWidth >= 1000) {
+    //   text += " To Start";
+    // }
+    // if (window.innerWidth >= 1400) {
+    //   fontSize = "28px";
+    // }
     context.font = `${fontSize} 'Press Start 2P', cursive`;
     context.fillStyle = "white";
     context.fillText(text, canvas.width / 10, canvas.height / 2);
