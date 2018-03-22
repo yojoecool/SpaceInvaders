@@ -390,6 +390,8 @@ class Enemy extends Character {
     this.shotFreq = shotFreq;
 
     this.hit = false;
+    this.hitFrames = 0;
+    this.killFrames = 0;
     //number of frames between animations
     this.animationFrame = 0;
     this.animationFreq = enemySprites[enemyType].animate;
@@ -401,6 +403,10 @@ class Enemy extends Character {
     //if the enemy type is greater than the level, the max lives is the level count
     //if the enemy type is less than or equal to the level, then lives are set to the enemy type
     this.lives = spriteInfo.hits > level ? level : spriteInfo.hits;
+  }
+
+  getHit() {
+    return this.hit;
   }
 
   setHit(hit) {
@@ -415,29 +421,37 @@ class Enemy extends Character {
   clear() {
     this.lives--;
     if (this.lives === 0) {
-      this.hit = true;
-      this.x = -500;
-      this.y = -500;
-      numOfEnemies--;
-      playSounds(invaderKilled);
-
       for (let i = 0; i < this.lasers.length; i++) {
         this.lasers[i].clear();
       }
+      numOfEnemies--;
+      playSounds(invaderKilled);
+      this.killFrames++;
+      this.hit = true;
+
+      this.srcX = 360;
+      this.srcY = 632;
+      this.srcWidth = 96;
+      this.srcHeight = 58;
     }
-    else playSounds(invaderHit);
+    else {
+      this.hitFrames++;
+      playSounds(invaderHit);
+    }
   }
 
   //update enemies each tick
   update() {
-    if (!gameOver && !this.hit && !gamePaused) {
+    if (this.x + this.dx >= 0) {
       this.x += this.dx;
 
       //if an edge is hit, moveDownNextTick lets all enemies know to move down a level
       if ((this.x + this.width >= canvas.width || this.x <= 0)) {
         moveDownNextTick = true;
       }
+    }
 
+    if (!gameOver && !this.hit && !gamePaused) {
       //when the number of frames to shoot is met, add a laser to the enemy's array
       this.shotFrame++;
       if (this.shotFrame === this.shotFreq) {
@@ -477,7 +491,23 @@ class Enemy extends Character {
       }
 
       //draw the new image
+      if (this.hitFrames > 0 && this.hitFrames < 6) {
+        this.hitFrames++;
+      }
+      else {
+        this.draw();
+        this.hitFrames = 0;
+      }
+    }
+
+    else if (this.hit && this.killFrames < 15) {
+      this.killFrames++;
       this.draw();
+    }
+
+    else if (this.hit) {
+      this.x = -500;
+      this.y = -500;
     }
   }
 }
@@ -555,7 +585,8 @@ let laserHitCheck = function() {
   for (let i = 0; i < playerLasers.length; i++) {
     for (let j = 0; j < enemies.length; j++) {
       if (playerLasers[i].getX() >= enemies[j].getX() && playerLasers[i].getX() + playerLasers[i].getWidth() <= enemies[j].getX() + enemies[j].getWidth() &&
-          playerLasers[i].getY() >= enemies[j].getY() && playerLasers[i].getY() + playerLasers[i].getHeight() <= enemies[j].getY() + enemies[j].getHeight()) {
+          playerLasers[i].getY() >= enemies[j].getY() && playerLasers[i].getY() + playerLasers[i].getHeight() <= enemies[j].getY() + enemies[j].getHeight() &&
+          !enemies[j].getHit()) {
         playerLasers[i].clear();
 
         score += 100;
@@ -764,7 +795,7 @@ let spaceDown = false;
 
 //sets what key is currently being pressed down (used in player's update function)
 document.addEventListener("keydown", (event) => {
-  if (!gamePaused)
+  if (!gamePaused && (event.keyCode === 39 || event.keyCode === 37))
     activeKey = event.keyCode;
 });
 
@@ -792,6 +823,7 @@ document.addEventListener("keypress", (event) => {
 
 //removes active key so that the player doesn't keep moving after the arrow keys have been released
 document.addEventListener("keyup", (event) => {
-  activeKey = -1;
+  if (event.keyCode === 39 || event.keyCode === 37)
+    activeKey = -1;
   if (event.keyCode === 32) spaceDown = false;
 });
