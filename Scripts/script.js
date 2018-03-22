@@ -432,7 +432,7 @@ class Enemy extends Character {
 
   //update enemies each tick
   update() {
-    if (this.x >= -300) {
+    if (this.x >= -300 && !gamePaused) {
       this.x += this.dx;
 
       //if an edge is hit, moveDownNextTick lets all enemies know to move down a level
