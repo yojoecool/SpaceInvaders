@@ -2,7 +2,7 @@ var backgroundCanvas = document.querySelector("#background-canvas");
 
 //make sure canvas is the size of the screen
 backgroundCanvas.width = window.screen.width;
-backgroundCanvas.height = window.screen.width;
+backgroundCanvas.height = window.screen.height;
 
 let backgroundContext = backgroundCanvas.getContext("2d");
 
