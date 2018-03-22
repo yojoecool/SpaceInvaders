@@ -1,8 +1,8 @@
 var backgroundCanvas = document.querySelector("#background-canvas");
 
 //make sure canvas is the size of the screen
-backgroundCanvas.width = window.innerWidth;
-backgroundCanvas.height = window.innerHeight;
+backgroundCanvas.width = window.screen.width;
+backgroundCanvas.height = window.screen.width;
 
 let backgroundContext = backgroundCanvas.getContext("2d");
 
@@ -109,8 +109,8 @@ backgroundLoop();
 /* Event Listeners */
 //redraw everything when the screen is resized
 window.addEventListener("resize", (event) => {
-  backgroundCanvas.width = window.innerWidth;
-  backgroundCanvas.height = window.innerHeight;
+  backgroundCanvas.width = window.screen.width;
+  backgroundCanvas.height = window.screen.height;
   createStars();
   drawPageBackground();
 });
