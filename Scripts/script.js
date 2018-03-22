@@ -520,7 +520,7 @@ let createEnemies = function(speed) {
       let x = i * (2 * enemyWidth * 1.15);
       let y = j * (1.5 * enemyHeight) + 55;
 
-      enemies.push(new Enemy(x, y, speed, Math.floor(enemyHeight * (1 / 2.5)), enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
+      enemies.push(new Enemy(x, y, speed, Math.ceil(enemyHeight * (1 / 2.5)), enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
       numOfEnemies++;
     }
   }
