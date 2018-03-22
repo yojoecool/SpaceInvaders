@@ -372,7 +372,7 @@ class Enemy extends Character {
     let srcWidth = spriteInfo.width;
     let srcHeight = spriteInfo.height;
 
-    super(x, y, dx, dy, width, height, color, 4, true, 7, imgSrc, srcX, srcY, srcWidth, srcHeight);
+    super(x, y, dx, dy, width, height, color, 4, true, 6, imgSrc, srcX, srcY, srcWidth, srcHeight);
 
     this.enemyType = enemyType;
     //number of frames between shots
@@ -520,7 +520,7 @@ let createEnemies = function(speed) {
       let x = i * (2 * enemyWidth * 1.15);
       let y = j * (1.5 * enemyHeight) + 55;
 
-      enemies.push(new Enemy(x, y, speed, enemyHeight * (1 / 2), enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
+      enemies.push(new Enemy(x, y, speed, Math.floor(enemyHeight * (1 / 2.5)), enemyWidth, enemyHeight, fireRate, spriteSheet, enemyType));
       numOfEnemies++;
     }
   }
