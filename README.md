@@ -30,7 +30,7 @@ My biggest win was getting things animated smoothly with the controls being resp
 None that I know of
 
 ## Future Features
-More levels, enemy movement closer to the original game, high scores
+More levels, bosses, high scores, touch-screen controls
 
 ## User Stories
 https://trello.com/b/sCXykRc4/space-invaders
