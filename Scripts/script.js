@@ -517,7 +517,7 @@ let player;
 let enemies = [];
 let levels = [];
 let enemyWidth = canvas.width / 22;
-let enemyHeight = canvas.height / 20;
+let enemyHeight = canvas.height / 19;
 
 // Creates enemies for each level
 let createEnemies = function(speed) {
