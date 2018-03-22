@@ -491,7 +491,7 @@ class Enemy extends Character {
       }
 
       //draw the new image
-      if (this.hitFrames > 0 && this.hitFrames < 6) {
+      if (this.hitFrames > 0 && this.hitFrames < 7) {
         this.hitFrames++;
       }
       else {
