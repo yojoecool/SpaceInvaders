@@ -4,9 +4,9 @@ let canvas = document.querySelector("#game-canvas");
 
 // resize canvas based on window size
 let sizeScreen = function() {
-  if (window.screen.width >= 925) {
-    canvas.width = window.screen.width * 0.6;
-    canvas.height = window.screen.height * (2 / 3);
+  if (window.innerWidth >= 925) {
+    canvas.width = window.innerWidth * 0.6;
+    canvas.height = window.innerHeight * (2 / 3);
   }
 }
 
@@ -627,10 +627,10 @@ let drawStart = function() {
   if (flash) {
     let text = "Press Enter";
     let fontSize = "25px"
-    if (window.screen.width >= 1000) {
+    if (window.innerWidth >= 1000) {
       text += " To Start";
     }
-    if (window.screen.width >= 1400) {
+    if (window.innerWidth >= 1400) {
       fontSize = "35px";
     }
     context.font = `${fontSize} 'Press Start 2P', cursive`;
