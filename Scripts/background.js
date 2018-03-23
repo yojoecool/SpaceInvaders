@@ -16,8 +16,8 @@ let drawText = function() {
     backgroundContext.fillText("INVADERS", backgroundCanvas.width - 247, backgroundCanvas.height / 2 + 20);
   }
   else {
-    backgroundContext.fillText("SPACE", backgroundCanvas.width / 2 - 60, backgroundCanvas.height - 60);
-    backgroundContext.fillText("INVADERS", backgroundCanvas.width / 2 - 97, backgroundCanvas.height - 20);
+    backgroundContext.fillText("SPACE", backgroundCanvas.width / 2 - 60, backgroundCanvas.height - 50);
+    backgroundContext.fillText("INVADERS", backgroundCanvas.width / 2 - 97, backgroundCanvas.height - 10);
   }
 }
 
